@@ -3,8 +3,9 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 
-// var db = require("./db");
-const { sequelize } = require("./db");
+const db = require("./db");
+db.sequelize.sync();
+// db.sequelize.sync({ force: true })
 
 app.use(require("./routes/index.route"));
 

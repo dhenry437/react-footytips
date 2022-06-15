@@ -3,19 +3,14 @@ const { Sequelize } = require("sequelize");
 
 const DBSOURCE = "db.sqlite";
 
-let db = new sqlite3.Database(DBSOURCE, err => {
-  if (err) {
-    // Cannot open database
-    console.error(err.message);
-    throw err;
-  }
-});
-
 const sequelize = new Sequelize({
-  dialect: DBSOURCE,
-  storage: "../db.sqlite",
+  dialect: "sqlite",
+  storage: "db.sqlite",
 });
 
-module.exports = {
-  sequelize,
-};
+const db = {};
+db.Sequelize = Sequelize;
+db.sequelize = sequelize;
+db.fixture = require("./fixture.model.js")(sequelize, Sequelize);
+
+module.exports = db;
