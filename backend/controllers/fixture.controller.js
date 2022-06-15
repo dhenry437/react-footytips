@@ -1,4 +1,9 @@
-const { getFixtureFromFanfooty, insertCsvIntoDb, getFixtureLoadIntoDB } = require("../services/fixture.service");
+const {
+  getFixtureFromFanfooty,
+  insertCsvIntoDb,
+  // getFixtureLoadIntoDB,
+  getSeasonsFromDb,
+} = require("../services/fixture.service");
 
 const getFixture = async (req, res) => {
   const { secret } = req.body;
@@ -12,13 +17,20 @@ const getFixture = async (req, res) => {
   }
 
   fixtureCsv = await getFixtureFromFanfooty();
-  await insertCsvIntoDb(fixtureCsv)
+  await insertCsvIntoDb(fixtureCsv);
 
   // getFixtureLoadIntoDB()
 
   res.send(200);
 };
 
+const getSeasons = async (req, res) => {
+  const seasons = await getSeasonsFromDb();
+
+  res.send(seasons);
+};
+
 module.exports = {
   getFixture,
+  getSeasons,
 };

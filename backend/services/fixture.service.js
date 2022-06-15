@@ -1,9 +1,10 @@
 const axios = require("axios");
-const csv = require('csvtojson');
+const csv = require("csvtojson");
 const request = require("request");
 
-const db = require('../db')
-const Match = db.matches
+const db = require("../db");
+const Sequelize = db.Sequelize;
+const Match = db.matches;
 
 const getFixtureFromFanfooty = async () => {
   const csvHeader = process.env.FF_CSV_HEADER;
@@ -22,27 +23,40 @@ const getFixtureFromFanfooty = async () => {
 };
 
 const insertCsvIntoDb = csvString => {
-  Match.destroy({ where: {} })
+  Match.destroy({ where: {} });
   csv()
     .fromString(csvString)
-    .then((csvRow) => {
-      Match.bulkCreate(csvRow)
-    })
-}
+    .then(csvRow => {
+      Match.bulkCreate(csvRow);
+    });
+};
 
 // ! This dosen't work but should be faster
 const getFixtureLoadIntoDB = async () => {
   csv()
     .fromStream(request.get(process.env.FF_FIXTURE_URL))
-    .subscribe((json) => {
+    .subscribe(json => {
       return new Promise((resolve, reject) => {
-        Match.create(json)
-      })
+        Match.create(json);
+      });
     });
-}
+};
+
+const getSeasonsFromDb = async () => {
+  // Select disticnt values for column year
+  seasons = await Match.findAll({
+    attributes: [[Sequelize.fn("DISTINCT", Sequelize.col("year")), "year"]],
+  });
+
+  // convert from [{ key: value }, { key: value }, ...] to [value, value, ...]
+  seasons = seasons.map(x => x.year);
+
+  return seasons;
+};
 
 module.exports = {
   getFixtureFromFanfooty,
   insertCsvIntoDb,
-  getFixtureLoadIntoDB
+  getFixtureLoadIntoDB,
+  getSeasonsFromDb,
 };
