@@ -1,4 +1,9 @@
 const axios = require("axios");
+const csv = require('csvtojson');
+const request = require("request");
+
+const db = require('../db')
+const Match = db.matches
 
 const getFixtureFromFanfooty = async () => {
   const csvHeader = process.env.FF_CSV_HEADER;
@@ -16,6 +21,28 @@ const getFixtureFromFanfooty = async () => {
   return csvFixture;
 };
 
+const insertCsvIntoDb = csvString => {
+  Match.destroy({ where: {} })
+  csv()
+    .fromString(csvString)
+    .then((csvRow) => {
+      Match.bulkCreate(csvRow)
+    })
+}
+
+// ! This dosen't work but should be faster
+const getFixtureLoadIntoDB = async () => {
+  csv()
+    .fromStream(request.get(process.env.FF_FIXTURE_URL))
+    .subscribe((json) => {
+      return new Promise((resolve, reject) => {
+        Match.create(json)
+      })
+    });
+}
+
 module.exports = {
   getFixtureFromFanfooty,
+  insertCsvIntoDb,
+  getFixtureLoadIntoDB
 };

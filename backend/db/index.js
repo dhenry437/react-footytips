@@ -11,6 +11,6 @@ const sequelize = new Sequelize({
 const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
-db.fixture = require("./fixture.model.js")(sequelize, Sequelize);
+db.matches = require("./match.model.js")(sequelize, Sequelize);
 
 module.exports = db;

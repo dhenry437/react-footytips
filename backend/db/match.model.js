@@ -1,5 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-  const Fixture = sequelize.define("fixture", {
+  const Match = sequelize.define("matches", {
     ff_draw_id: { type: Sequelize.INTEGER },
     year: { type: Sequelize.INTEGER },
     competition: { type: Sequelize.STRING }, // HA for home & away, P1/P2/P3/P4 for preseason, EF/QF/SF/PF/GF for finals
@@ -21,5 +21,5 @@ module.exports = (sequelize, Sequelize) => {
     away_points: { type: Sequelize.INTEGER },
     match_status: { type: Sequelize.STRING }, // either Full Time or blank type: Sequelize.STRING },
   });
-  return Fixture;
+  return Match;
 };
