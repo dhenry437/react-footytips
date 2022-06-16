@@ -1,4 +1,9 @@
-const { getFixtureFromFanfooty, insertCsvIntoDb, getFixtureLoadIntoDB } = require("../services/fixture.service");
+const {
+  getFixtureFromFanfooty,
+  insertCsvIntoDb,
+  getSeasonsFromDb,
+  getRoundsFromDb,
+} = require("../services/fixture.service");
 
 const getFixture = async (req, res) => {
   const { secret } = req.body;
@@ -12,13 +17,32 @@ const getFixture = async (req, res) => {
   }
 
   fixtureCsv = await getFixtureFromFanfooty();
-  await insertCsvIntoDb(fixtureCsv)
+  await insertCsvIntoDb(fixtureCsv);
 
-  // getFixtureLoadIntoDB()
+  res.send("Database refreshed succesfully");
+};
 
-  res.send(200);
+const getSeasons = async (req, res) => {
+  const seasons = await getSeasonsFromDb();
+
+  res.send(seasons);
+};
+
+const getRounds = async (req, res) => {
+  const year = parseInt(req.query?.year);
+
+  if (!Number.isInteger(year)) {
+    res.status(400).send("Invalid query parameter year");
+    return;
+  }
+
+  const rounds = await getRoundsFromDb(year);
+
+  res.send(rounds);
 };
 
 module.exports = {
   getFixture,
+  getSeasons,
+  getRounds,
 };
