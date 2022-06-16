@@ -8,7 +8,7 @@ const {
   getMatches,
 } = require("../controllers/fixture.controller");
 
-router.post("/get-data", getFixture);
+router.post("/refresh-data", getFixture);
 
 // Get all seasons (years)
 router.get("/seasons", getSeasons);

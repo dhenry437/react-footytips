@@ -3,6 +3,11 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import axios from "axios";
+
+// Set API URL
+const { protocol, hostname } = window.location
+axios.defaults.baseURL = `${protocol}//${hostname}:3001/api`;
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

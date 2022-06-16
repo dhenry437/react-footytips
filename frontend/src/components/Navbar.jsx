@@ -1,7 +1,16 @@
 import React from "react";
+import refreshData from "../data/repository";
 import logo from "../img/logo192.png";
 
 export default function Navbar() {
+  const handleClickRefreshData = async () => {
+    const secret = window.prompt("Password:");
+
+    if (secret) {
+      refreshData(secret);
+    }
+  };
+
   return (
     <nav className="navbar bg-light">
       <div className="d-flex justify-content-between container-fluid">
@@ -15,7 +24,11 @@ export default function Navbar() {
           />
           Footy Tipping
         </a>
-        <button className="btn btn-outline-success">Refresh Data</button>
+        <button
+          className="btn btn-outline-success"
+          onClick={handleClickRefreshData}>
+          Refresh Data
+        </button>
       </div>
     </nav>
   );

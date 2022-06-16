@@ -2,9 +2,9 @@
 
 ## API Usage
 
-- POST /api/get-data
+- POST /api/refresh-data
 
-### POST /api/get-data
+### POST /api/refresh-data
 
 Refresh the data in the DB from FanFooty resource
 
