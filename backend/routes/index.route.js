@@ -1,7 +1,11 @@
 const express = require("express");
 const router = express.Router();
 
-const { getFixture, getSeasons } = require("../controllers/fixture.controller");
+const {
+  getFixture,
+  getSeasons,
+  getRounds,
+} = require("../controllers/fixture.controller");
 
 router.post("/get-data", getFixture);
 
@@ -9,7 +13,7 @@ router.post("/get-data", getFixture);
 router.get("/seasons", getSeasons);
 
 //GET /api/rounds?season=[YEAR]
-router.get("/rounds");
+router.get("/rounds", getRounds);
 
 // GET /api/matches?season=[YEAR]&round=[ROUND]
 router.get("/matches");
