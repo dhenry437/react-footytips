@@ -3,6 +3,7 @@ const {
   insertCsvIntoDb,
   getSeasonsFromDb,
   getRoundsFromDb,
+  getMatchesFromDb,
 } = require("../services/fixture.service");
 
 const getFixture = async (req, res) => {
@@ -32,7 +33,7 @@ const getRounds = async (req, res) => {
   const year = parseInt(req.query?.year);
 
   if (!Number.isInteger(year)) {
-    res.status(400).send("Invalid query parameter year");
+    res.status(400).send('Invalid value for query parameter "year"');
     return;
   }
 
@@ -41,8 +42,23 @@ const getRounds = async (req, res) => {
   res.send(rounds);
 };
 
+const getMatches = async (req, res) => {
+  const year = parseInt(req.query?.year);
+  const round = req.query?.round;
+
+  if (!Number.isInteger(year)) {
+    res.status(400).send('Invalid value for query parameter "year"');
+    return;
+  }
+
+  const rounds = await getMatchesFromDb(year, round);
+
+  res.send(rounds);
+};
+
 module.exports = {
   getFixture,
   getSeasons,
   getRounds,
+  getMatches,
 };

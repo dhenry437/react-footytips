@@ -1,5 +1,6 @@
 const axios = require("axios");
 const csv = require("csvtojson");
+const { matches } = require("../db");
 
 const db = require("../db");
 const Sequelize = db.Sequelize;
@@ -58,7 +59,7 @@ const getSeasonsFromDb = async () => {
   return seasons;
 };
 
-const getRoundsFromDb = async (year = null) => {
+const getRoundsFromDb = async year => {
   // Select disticnt values for column year
   rounds = await Match.findAll({
     attributes: [
@@ -84,9 +85,55 @@ const getRoundsFromDb = async (year = null) => {
   return { preliminary, homeAway, finals };
 };
 
+const getMatchesFromDb = async (year, round) => {
+  let matches = null;
+  console.log(round);
+
+  if (Number.isInteger(round)) {
+    matches = await Match.findAll({
+      where: { year: year, round: round },
+    });
+  } else if (
+    round.toString().includes("QF") &&
+    round.toString().includes("EF")
+  ) {
+    matches = await Match.findAll({
+      where: { year: year, competition: { [Op.or]: ["QF", "EF"] } },
+    });
+  } else {
+    matches = await Match.findAll({
+      where: { year: year, competition: round },
+    });
+  }
+
+  // Keep only the properties we need
+  matches = matches.map(
+    ({
+      gametime,
+      home_team,
+      away_team,
+      ground,
+      home_points,
+      away_points,
+      match_status,
+    }) => ({
+      gametime,
+      home_team,
+      away_team,
+      ground,
+      home_points,
+      away_points,
+      match_status,
+    })
+  );
+
+  return matches;
+};
+
 module.exports = {
   getFixtureFromFanfooty,
   insertCsvIntoDb,
   getSeasonsFromDb,
   getRoundsFromDb,
+  getMatchesFromDb,
 };

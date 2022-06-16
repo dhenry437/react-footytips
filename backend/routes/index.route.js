@@ -5,6 +5,7 @@ const {
   getFixture,
   getSeasons,
   getRounds,
+  getMatches,
 } = require("../controllers/fixture.controller");
 
 router.post("/get-data", getFixture);
@@ -16,6 +17,6 @@ router.get("/seasons", getSeasons);
 router.get("/rounds", getRounds);
 
 // GET /api/matches?season=[YEAR]&round=[ROUND]
-router.get("/matches");
+router.get("/matches", getMatches);
 
 module.exports = router;
