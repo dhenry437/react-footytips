@@ -22,7 +22,7 @@ export default function Navbar() {
             height="30"
             className="d-inline-block align-text-top me-2"
           />
-          Footy Tipping
+          Footy Tipping v3
         </a>
         <button
           className="btn btn-outline-success"

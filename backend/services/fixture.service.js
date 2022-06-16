@@ -48,46 +48,64 @@ const insertCsvIntoDb = async csvString => {
 
 const getSeasonsFromDb = async () => {
   // Select disticnt values for column year
-  seasons = await Match.findAll({
+  const matches = await Match.findAll({
     attributes: [[Sequelize.fn("DISTINCT", Sequelize.col("year")), "year"]],
   });
-
-  console.log(seasons);
   // convert from [{ key: value }, { key: value }, ...] to [value, value, ...]
-  seasons = seasons.map(x => x.year);
+  seasons = matches.map(x => x.year);
 
   return seasons;
 };
 
-const getRoundsFromDb = async year => {
-  // Select disticnt values for column year
-  rounds = await Match.findAll({
+const getRoundsFromDb = async season => {
+  // Select disticnt values for column season
+  const matches = await Match.findAll({
     attributes: [
       [Sequelize.fn("DISTINCT", Sequelize.col("round")), "round"],
       "competition",
     ],
-    where: { year: year },
+    where: { year: season },
   });
 
-  let preliminary = rounds.filter(x => x.competition.startsWith("P"));
+  let preliminary = matches.filter(x => x.competition.startsWith("P"));
   preliminary = preliminary.map(x => x.competition);
 
-  let homeAway = rounds.filter(x => x.competition === "HA");
+  let homeAway = matches.filter(x => x.competition === "HA");
   homeAway = homeAway.map(x => x.round);
 
-  let finals = rounds.filter(x => x.competition.endsWith("F"));
+  let finals = matches.filter(x => x.competition.endsWith("F"));
   finals = finals.map(x => x.competition);
   if (finals.includes("QF") && finals.includes("EF")) {
     finals = finals.filter(x => x !== "QF" && x !== "EF");
     finals = ["QF and EF", ...finals];
   }
 
-  return { preliminary, homeAway, finals };
+  // Taken from Zeta's answer to https://stackoverflow.com/questions/11795266/find-closest-date-in-array-with-javascript
+  let testDate = new Date();
+  let bestDate = matches.length;
+  let bestDiff = -new Date(0, 0, 0).valueOf();
+  let currDiff = 0;
+  let i;
+  console.log(bestDate);
+
+  for (i = 0; i < matches.length; ++i) {
+    currDiff = Math.abs(new Date(matches[i].gametime) - testDate);
+    console.log(currDiff);
+    if (currDiff < bestDiff) {
+      bestDate = i;
+      bestDiff = currDiff;
+    }
+  }
+  console.log(bestDate);
+  if (matches[bestDate].year === new Date().getYear()) {
+    currentRound = matches[bestDate].round;
+  }
+
+  return { preliminary, homeAway, finals, currentRound };
 };
 
 const getMatchesFromDb = async (year, round) => {
   let matches = null;
-  console.log(round);
 
   if (Number.isInteger(round)) {
     matches = await Match.findAll({
