@@ -1,6 +1,5 @@
 const axios = require("axios");
 const csv = require("csvtojson");
-const { matches } = require("../db");
 
 const db = require("../db");
 const Sequelize = db.Sequelize;
@@ -59,7 +58,7 @@ const getSeasonsFromDb = async () => {
 
 const getRoundsFromDb = async season => {
   // Select disticnt values for column season
-  const matches = await Match.findAll({
+  let matches = await Match.findAll({
     attributes: [
       [Sequelize.fn("DISTINCT", Sequelize.col("round")), "round"],
       "competition",
@@ -67,7 +66,7 @@ const getRoundsFromDb = async season => {
     where: { year: season },
   });
 
-  let preliminary = matches.filter(x => x.competition.startsWith("P"));
+  let preliminary = matches.filter(x => x.competition.startsWith("P") && x.round === 0);
   preliminary = preliminary.map(x => x.competition);
 
   let homeAway = matches.filter(x => x.competition === "HA");
@@ -80,25 +79,47 @@ const getRoundsFromDb = async season => {
     finals = ["QF and EF", ...finals];
   }
 
-  // Taken from Zeta's answer to https://stackoverflow.com/questions/11795266/find-closest-date-in-array-with-javascript
-  let testDate = new Date();
-  let bestDate = matches.length;
-  let bestDiff = -new Date(0, 0, 0).valueOf();
-  let currDiff = 0;
-  let i;
-  console.log(bestDate);
+  let currentRound = null;
+  if (season === new Date().getFullYear()) {
+    matches = await Match.findAll({
+      attributes: [
+        "gametime",
+        "round",
+        "competition"
+      ],
+      where: { year: season },
+    });
 
-  for (i = 0; i < matches.length; ++i) {
-    currDiff = Math.abs(new Date(matches[i].gametime) - testDate);
-    console.log(currDiff);
-    if (currDiff < bestDiff) {
-      bestDate = i;
-      bestDiff = currDiff;
+    // Taken from Zeta's answer to https://stackoverflow.com/questions/11795266/find-closest-date-in-array-with-javascript
+    let testDate = new Date();
+    let bestDate = matches.length;
+    let bestDiff = -new Date(0, 0, 0).valueOf();
+    let currDiff = 0;
+    let i;
+
+    for (i = 0; i < matches.length; ++i) {
+      currDiff = Math.abs(new Date(matches[i].gametime) - testDate);
+      if (currDiff < bestDiff) {
+        bestDate = i;
+        bestDiff = currDiff;
+      }
     }
-  }
-  console.log(bestDate);
-  if (matches[bestDate].year === new Date().getYear()) {
-    currentRound = matches[bestDate].round;
+
+    const currentRoundDb = await Match.findAll({
+      attributes: [
+        "round",
+        "competition"
+      ],
+      where: { year: season, round: matches[bestDate].round },
+    });
+
+    if (currentRoundDb.some(x => x.competition == "QF") && currentRoundDb.some(x => x.competition == "EF")) {
+      currentRound = "QF and EF";
+    } else if (matches[bestDate].competition !== "HA") {
+      currentRound = matches[bestDate].competition
+    } else {
+      currentRound = matches[bestDate].round;
+    }
   }
 
   return { preliminary, homeAway, finals, currentRound };

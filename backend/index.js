@@ -3,6 +3,8 @@ require('dotenv-flow').config();
 const express = require("express");
 const cors = require('cors')
 
+console.log(process.env.CLIENT_CORS_ORIGIN);
+
 const corsOptions = {
   origin: process.env.CLIENT_CORS_ORIGIN,
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204

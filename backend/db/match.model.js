@@ -3,7 +3,7 @@ module.exports = (sequelize, Sequelize) => {
     ff_draw_id: { type: Sequelize.INTEGER },
     year: { type: Sequelize.INTEGER },
     competition: { type: Sequelize.STRING }, // HA for home & away, P1/P2/P3/P4 for preseason, EF/QF/SF/PF/GF for finals
-    round: { type: Sequelize.STRING },
+    round: { type: Sequelize.INTEGER },
     gametime: { type: Sequelize.DATE },// AET
     day: { type: Sequelize.STRING },
     home_team: { type: Sequelize.STRING },

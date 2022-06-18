@@ -32,6 +32,7 @@ export default function RoundSwitcher() {
     setLoading(loading => {
       return { ...loading, rounds: false };
     });
+    setSelectedRound(response.data.currentRound || "");
   }, []);
 
   useEffect(() => {
@@ -50,7 +51,13 @@ export default function RoundSwitcher() {
   };
 
   const handleClickNavigation = direction => {
-    const roundsFlatArray = Object.values(rounds).flat();
+    const roundsFlatArray = Object.values(
+      (({ preliminary, homeAway, finals }) => ({
+        preliminary,
+        homeAway,
+        finals,
+      }))(rounds)
+    ).flat();
     const currentRoundIndex = roundsFlatArray.indexOf(selectedRound);
 
     if (
@@ -67,12 +74,20 @@ export default function RoundSwitcher() {
     );
   };
 
+  const handleClickCurrent = () => {
+    setSelectedRound(rounds.currentRound || "");
+  };
+
+  const handleChangeMobileRoundSwitcher = event => {
+    setSelectedRound(event.target.value);
+  };
+
   return (
     <div className="card mt-3 mx-3">
       <div
         style={{ height: 48 }}
         className="card-header d-flex justify-content-between align-items-center">
-        <span>Rounds</span>
+        <span>Round</span>
         <div style={{ width: 100 }}>
           {loading.seasons ? (
             <div className="d-flex justify-content-end align-items-center">
@@ -97,32 +112,75 @@ export default function RoundSwitcher() {
       </div>
       <div className="card-body pb-1">
         {loading.rounds ? (
-          <div className="d-flex justify-content-center">
-            <div className="spinner-border my-5" role="status">
-              <span className="visually-hidden">Loading...</span>
+          <>
+            <div className="d-none d-xl-flex justify-content-center">
+              <div className="spinner-border my-5" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
             </div>
-          </div>
+            <div className="d-flex d-xl-none justify-content-center">
+              <div className="spinner-border" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+            </div>
+          </>
         ) : (
-          <div>
-            <RoundSwitcherPagination
-              rounds={rounds.preliminary}
-              selectedRound={selectedRound}
-              handleClickRound={handleClickRound}
-              handleClickNavigation={handleClickNavigation}
-            />
-            <RoundSwitcherPagination
-              rounds={rounds.homeAway}
-              selectedRound={selectedRound}
-              handleClickRound={handleClickRound}
-              handleClickNavigation={handleClickNavigation}
-            />
-            <RoundSwitcherPagination
-              rounds={rounds.finals}
-              selectedRound={selectedRound}
-              handleClickRound={handleClickRound}
-              handleClickNavigation={handleClickNavigation}
-            />
-          </div>
+          <>
+            <div className="d-none d-xl-block">
+              <RoundSwitcherPagination
+                rounds={rounds.preliminary}
+                selectedRound={selectedRound}
+                handleClickRound={handleClickRound}
+                handleClickNavigation={handleClickNavigation}
+                handleClickCurrent={handleClickCurrent}
+              />
+              <RoundSwitcherPagination
+                rounds={rounds.homeAway}
+                selectedRound={selectedRound}
+                handleClickRound={handleClickRound}
+                handleClickNavigation={handleClickNavigation}
+                handleClickCurrent={handleClickCurrent}
+              />
+              <RoundSwitcherPagination
+                rounds={rounds.finals}
+                selectedRound={selectedRound}
+                handleClickRound={handleClickRound}
+                handleClickNavigation={handleClickNavigation}
+                handleClickCurrent={handleClickCurrent}
+              />
+            </div>
+            <div className="d-block d-xl-none">
+              <select
+                name="selectedRound"
+                value={selectedRound}
+                onChange={handleChangeMobileRoundSwitcher}
+                className="form-select mb-3">
+                {Object.values(
+                  (({ preliminary, homeAway, finals }) => ({
+                    preliminary,
+                    homeAway,
+                    finals,
+                  }))(rounds)
+                )
+                  .flat()
+                  .map(round => {
+                    return (
+                      <option key={round} value={round}>
+                        {round}
+                      </option>
+                    );
+                  })}
+              </select>
+            </div>
+            <button
+              className="btn btn-primary mb-2"
+              onClick={handleClickCurrent}
+              disabled={
+                !rounds.currentRound || selectedRound === rounds.currentRound
+              }>
+              Current Round
+            </button>
+          </>
         )}
       </div>
     </div>
