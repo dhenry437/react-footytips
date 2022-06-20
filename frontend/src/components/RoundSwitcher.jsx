@@ -5,16 +5,13 @@ import { useState } from "react";
 import { getRounds, getSeasons } from "../data/repository";
 import RoundSwitcherPagination from "./RoundSwitcherPagination";
 
-export default function RoundSwitcher() {
+export default function RoundSwitcher(props) {
+  const { selectedSeason, setSelectedSeason, selectedRound, setSelectedRound } =
+    props;
+
   const [loading, setLoading] = useState({ seasons: true, rounds: true });
   const [seasons, setSeaons] = useState(null);
   const [rounds, setRounds] = useState(null);
-  const [fields, setFields] = useState({ season: new Date().getFullYear() });
-  const [selectedRound, setSelectedRound] = useState(null);
-
-  const handleInputChange = event => {
-    setFields({ ...fields, [event.target.name]: event.target.value });
-  };
 
   const fetchSeasonsCallback = useCallback(async () => {
     const response = await getSeasons();
@@ -25,15 +22,18 @@ export default function RoundSwitcher() {
     });
   }, []);
 
-  const fetchRoundsCallback = useCallback(async season => {
-    const response = await getRounds(season);
+  const fetchRoundsCallback = useCallback(
+    async season => {
+      const response = await getRounds(season);
 
-    setRounds(response.data);
-    setLoading(loading => {
-      return { ...loading, rounds: false };
-    });
-    setSelectedRound(response.data.currentRound || "");
-  }, []);
+      setRounds(response.data);
+      setLoading(loading => {
+        return { ...loading, rounds: false };
+      });
+      setSelectedRound(response.data.currentRound || "");
+    },
+    [setSelectedRound]
+  );
 
   useEffect(() => {
     fetchSeasonsCallback();
@@ -43,11 +43,15 @@ export default function RoundSwitcher() {
     setLoading(loading => {
       return { ...loading, rounds: true };
     });
-    fetchRoundsCallback(fields.season);
-  }, [fetchRoundsCallback, fields.season]);
+    fetchRoundsCallback(selectedSeason);
+  }, [fetchRoundsCallback, selectedSeason]);
 
   const handleClickRound = round => {
     setSelectedRound(round);
+  };
+
+  const handleChangeSeason = season => {
+    setSelectedSeason(season);
   };
 
   const handleClickNavigation = direction => {
@@ -98,8 +102,8 @@ export default function RoundSwitcher() {
           ) : (
             <select
               name="season"
-              value={fields.season}
-              onChange={handleInputChange}
+              value={selectedSeason}
+              onChange={event => handleChangeSeason(event.target.value)}
               className="form-select form-select-sm">
               {seasons?.map(season => (
                 <option key={season} value={season}>

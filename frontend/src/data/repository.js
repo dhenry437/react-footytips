@@ -2,7 +2,7 @@ import axios from "axios";
 
 export default async function refreshData(secret) {
   const bodyParameters = {
-    secret: secret
+    secret: secret,
   };
 
   const response = await axios
@@ -15,11 +15,9 @@ export default async function refreshData(secret) {
 }
 
 export async function getSeasons() {
-  const response = await axios
-    .get("/seasons")
-    .catch(function (error) {
-      return error.response;
-    });
+  const response = await axios.get("/seasons").catch(function (error) {
+    return error.response;
+  });
 
   return response;
 }
@@ -32,11 +30,25 @@ export async function getRounds(season) {
     };
   }
 
-  const response = await axios
-    .get("/rounds", config)
-    .catch(function (error) {
-      return error.response;
-    });
+  const response = await axios.get("/rounds", config).catch(function (error) {
+    return error.response;
+  });
+
+  return response;
+}
+
+export async function getMatches(season, round) {
+  let config = {};
+  if (season && round) {
+    config.params = {
+      season: season,
+      round: round,
+    };
+  }
+
+  const response = await axios.get("/matches", config).catch(function (error) {
+    return error.response;
+  });
 
   return response;
 }

@@ -16,7 +16,7 @@ export default function RoundSwitcherPagination(props) {
           <li
             className="page-item"
             onClick={() => handleClickNavigation("prev")}>
-            <a className="page-link nostyle" href="/#">
+            <a className="page-link nostyle" href="#/">
               Previous
             </a>
           </li>
@@ -25,7 +25,7 @@ export default function RoundSwitcherPagination(props) {
               key={`xl${round}`}
               className={`page-item${selectedRound === round ? " active" : ""}`}
               onClick={() => handleClickRound(round)}>
-              <a className="page-link nostyle" href="/#">
+              <a className="page-link nostyle" href="#/">
                 {round}
               </a>
             </li>
@@ -33,7 +33,7 @@ export default function RoundSwitcherPagination(props) {
           <li
             className="page-item"
             onClick={() => handleClickNavigation("next")}>
-            <a className="page-link nostyle" href="/#">
+            <a className="page-link nostyle" href="#/">
               Next
             </a>
           </li>

@@ -66,7 +66,9 @@ const getRoundsFromDb = async season => {
     where: { year: season },
   });
 
-  let preliminary = matches.filter(x => x.competition.startsWith("P") && x.round === 0);
+  let preliminary = matches.filter(
+    x => x.competition.startsWith("P") && x.round === 0
+  );
   preliminary = preliminary.map(x => x.competition);
 
   let homeAway = matches.filter(x => x.competition === "HA");
@@ -82,11 +84,7 @@ const getRoundsFromDb = async season => {
   let currentRound = null;
   if (season === new Date().getFullYear()) {
     matches = await Match.findAll({
-      attributes: [
-        "gametime",
-        "round",
-        "competition"
-      ],
+      attributes: ["gametime", "round", "competition"],
       where: { year: season },
     });
 
@@ -106,17 +104,17 @@ const getRoundsFromDb = async season => {
     }
 
     const currentRoundDb = await Match.findAll({
-      attributes: [
-        "round",
-        "competition"
-      ],
+      attributes: ["round", "competition"],
       where: { year: season, round: matches[bestDate].round },
     });
 
-    if (currentRoundDb.some(x => x.competition == "QF") && currentRoundDb.some(x => x.competition == "EF")) {
+    if (
+      currentRoundDb.some(x => x.competition == "QF") &&
+      currentRoundDb.some(x => x.competition == "EF")
+    ) {
       currentRound = "QF and EF";
     } else if (matches[bestDate].competition !== "HA") {
-      currentRound = matches[bestDate].competition
+      currentRound = matches[bestDate].competition;
     } else {
       currentRound = matches[bestDate].round;
     }
@@ -128,7 +126,7 @@ const getRoundsFromDb = async season => {
 const getMatchesFromDb = async (year, round) => {
   let matches = null;
 
-  if (Number.isInteger(round)) {
+  if (!isNaN(round)) {
     matches = await Match.findAll({
       where: { year: year, round: round },
     });
@@ -147,24 +145,17 @@ const getMatchesFromDb = async (year, round) => {
 
   // Keep only the properties we need
   matches = matches.map(
-    ({
+    ({ gametime, home_team, away_team, ground, home_points, away_points }) => ({
       gametime,
       home_team,
       away_team,
       ground,
       home_points,
       away_points,
-      match_status,
-    }) => ({
-      gametime,
-      home_team,
-      away_team,
-      ground,
-      home_points,
-      away_points,
-      match_status,
     })
   );
+
+  matches.map(x => (x.selected = null));
 
   return matches;
 };

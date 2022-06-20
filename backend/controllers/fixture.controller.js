@@ -43,15 +43,15 @@ const getRounds = async (req, res) => {
 };
 
 const getMatches = async (req, res) => {
-  const year = parseInt(req.query?.year);
+  const season = parseInt(req.query?.season);
   const round = req.query?.round;
 
-  if (!Number.isInteger(year)) {
-    res.status(400).send('Invalid value for query parameter "year"');
+  if (!Number.isInteger(season)) {
+    res.status(400).send('Invalid value for query parameter "season"');
     return;
   }
 
-  const rounds = await getMatchesFromDb(year, round);
+  const rounds = await getMatchesFromDb(season, round);
 
   res.send(rounds);
 };
