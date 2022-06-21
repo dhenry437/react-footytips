@@ -120,7 +120,7 @@ export default function Matches(props) {
                 disabled></button>
               <ul className="dropdown-menu" aria-labelledby="btnGroupDrop1">
                 <li>
-                  <a className="dropdown-item" href="#">
+                  <a className="dropdown-item" href="#/">
                     Odds Provider
                   </a>
                 </li>

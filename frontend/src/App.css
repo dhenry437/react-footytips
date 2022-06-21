@@ -13,3 +13,11 @@ a.nostyle:visited {
 .active a.page-link.nostyle {
   color: white;
 }
+
+/* Fix a Bootstrap bug */
+.input-group:not(.has-validation) > .dropdown-toggle:nth-last-child(n + 3),
+.input-group:not(.has-validation)
+  > :not(:last-child):not(.dropdown-toggle):not(.dropdown-menu) {
+  border-top-right-radius: unset;
+  border-bottom-right-radius: unset;
+}

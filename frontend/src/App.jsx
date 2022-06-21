@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { useEffect } from "react";
+import { ToastContainer } from "react-toastify";
 import "./App.css";
+import Email from "./components/Email";
 import Matches from "./components/Matches";
 import Navbar from "./components/Navbar";
 import RoundSwitcher from "./components/RoundSwitcher";
@@ -14,6 +15,7 @@ function App() {
 
   return (
     <>
+      <ToastContainer autoClose={3000} />
       <Navbar />
       <RoundSwitcher
         selectedSeason={selectedSeason}
@@ -27,6 +29,7 @@ function App() {
         selectedSeason={selectedSeason}
         selectedRound={selectedRound}
       />
+      <Email />
     </>
   );
 }

@@ -1,13 +1,21 @@
 import React from "react";
 import refreshData from "../data/repository";
 import logo from "../img/logo192.png";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.min.css";
 
 export default function Navbar() {
   const handleClickRefreshData = async () => {
     const secret = window.prompt("Password:");
 
     if (secret) {
-      refreshData(secret);
+      const response = refreshData(secret);
+
+      toast.promise(response, {
+        pending: "Refreshing data...",
+        success: "Got the data",
+        error: "Error when fetching data",
+      });
     }
   };
 
