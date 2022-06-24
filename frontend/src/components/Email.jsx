@@ -1,10 +1,14 @@
 import React, { useState } from "react";
+import { sendEmail } from "../data/repository";
+import { toast } from "react-toastify";
+import ReCAPTCHA from "react-google-recaptcha";
 
-export default function Email() {
+export default function Email(props) {
+  const { matches, selectedRound } = props;
   const [fields, setFields] = useState({
     name: "",
-    toEmail: [""],
-    ccEmail: [""],
+    toEmails: [""],
+    ccEmails: [""],
   });
 
   const handleInputChange = event => {
@@ -25,8 +29,8 @@ export default function Email() {
   const handleClickClear = () => {
     setFields({
       name: "",
-      toEmail: [""],
-      ccEmail: [""],
+      toEmails: [""],
+      ccEmails: [""],
     });
   };
 
@@ -43,8 +47,32 @@ export default function Email() {
     });
   };
 
-  const handleSubmit = event => {
+  const handleSubmit = async event => {
     event.preventDefault();
+
+    // Save the value of name incase it is changed while promise is pending
+    const name = fields.name;
+
+    // Keep only the properties we need
+    const tmpMatches = matches.map(({ home_team, away_team, selected }) => ({
+      home_team,
+      away_team,
+      selected,
+    }));
+
+    let response = sendEmail(
+      tmpMatches,
+      selectedRound,
+      name,
+      fields.toEmails,
+      fields.ccEmails
+    );
+
+    toast.promise(response, {
+      pending: "Sending email...",
+      success: `Email sent to ${fields.toEmails.join(", ")}`,
+      error: "Error while sending email",
+    });
   };
 
   return (
@@ -71,17 +99,17 @@ export default function Email() {
             />
           </div>
           <div className="col-12">
-            <label htmlFor="toEmail" className="form-label">
+            <label htmlFor="toEmails" className="form-label">
               To
             </label>
-            {fields.toEmail.map((toEmail, i) => (
+            {fields.toEmails.map((toEmails, i) => (
               <div key={i} className="input-group mb-3">
-                {i === fields.toEmail.length - 1 ? (
+                {i === fields.toEmails.length - 1 ? (
                   <>
                     <button
                       className="btn btn-outline-success d-flex align-items-center"
                       type="button"
-                      onClick={() => handleClickAddRow("toEmail")}>
+                      onClick={() => handleClickAddRow("toEmails")}>
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="20"
@@ -96,12 +124,12 @@ export default function Email() {
                     <input
                       type="email"
                       className="form-control"
-                      id="toEmail"
-                      name="toEmail"
+                      id="toEmails"
+                      name="toEmails"
                       placeholder="name@example.com"
-                      value={toEmail}
+                      value={toEmails}
                       onChange={event => {
-                        handleArrayInputChange(event, "toEmail", i);
+                        handleArrayInputChange(event, "toEmails", i);
                       }}
                       required={i === 0}
                     />
@@ -111,7 +139,7 @@ export default function Email() {
                     <button
                       className="btn btn-outline-danger d-flex align-items-center"
                       type="button"
-                      onClick={() => handleClickRemoveRow("toEmail", i)}>
+                      onClick={() => handleClickRemoveRow("toEmails", i)}>
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="20"
@@ -126,12 +154,12 @@ export default function Email() {
                     <input
                       type="email"
                       className="form-control"
-                      id="toEmail"
-                      name="toEmail"
+                      id="toEmails"
+                      name="toEmails"
                       placeholder="name@example.com"
-                      value={toEmail}
+                      value={toEmails}
                       onChange={event => {
-                        handleArrayInputChange(event, "toEmail", i);
+                        handleArrayInputChange(event, "toEmails", i);
                       }}
                       required={i === 0}
                     />
@@ -141,17 +169,17 @@ export default function Email() {
             ))}
           </div>
           <div className="col-12">
-            <label htmlFor="ccEmail" className="form-label">
+            <label htmlFor="ccEmails" className="form-label">
               CC
             </label>
-            {fields.ccEmail.map((ccEmail, i) => (
+            {fields.ccEmails.map((ccEmails, i) => (
               <div key={i} className="input-group mb-3">
-                {i === fields.ccEmail.length - 1 ? (
+                {i === fields.ccEmails.length - 1 ? (
                   <>
                     <button
                       className="btn btn-outline-success d-flex align-items-center"
                       type="button"
-                      onClick={() => handleClickAddRow("ccEmail")}>
+                      onClick={() => handleClickAddRow("ccEmails")}>
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="20"
@@ -166,12 +194,12 @@ export default function Email() {
                     <input
                       type="email"
                       className="form-control"
-                      id="ccEmail"
-                      name="ccEmail"
+                      id="ccEmails"
+                      name="ccEmails"
                       placeholder="name@example.com"
-                      value={ccEmail}
+                      value={ccEmails}
                       onChange={event => {
-                        handleArrayInputChange(event, "ccEmail", i);
+                        handleArrayInputChange(event, "ccEmails", i);
                       }}
                     />
                   </>
@@ -180,7 +208,7 @@ export default function Email() {
                     <button
                       className="btn btn-outline-danger d-flex align-items-center"
                       type="button"
-                      onClick={() => handleClickRemoveRow("ccEmail", i)}>
+                      onClick={() => handleClickRemoveRow("ccEmails", i)}>
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="20"
@@ -195,12 +223,12 @@ export default function Email() {
                     <input
                       type="email"
                       className="form-control"
-                      id="ccEmail"
-                      name="ccEmail"
+                      id="ccEmails"
+                      name="ccEmails"
                       placeholder="name@example.com"
-                      value={ccEmail}
+                      value={ccEmails}
                       onChange={event => {
-                        handleArrayInputChange(event, "ccEmail", i);
+                        handleArrayInputChange(event, "ccEmails", i);
                       }}
                     />
                   </>

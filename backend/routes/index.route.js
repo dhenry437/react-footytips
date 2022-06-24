@@ -8,6 +8,10 @@ const {
   getMatches,
 } = require("../controllers/fixture.controller");
 
+const {
+  sendEmail
+} = require("../controllers/email.controller");
+
 router.post("/refresh-data", getFixture);
 
 // Get all seasons (years)
@@ -20,5 +24,7 @@ router.get("/current-round");
 
 // GET /api/matches?season=[YEAR]&round=[ROUND]
 router.get("/matches", getMatches);
+
+router.post("/send-email", sendEmail);
 
 module.exports = router;

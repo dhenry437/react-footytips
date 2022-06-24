@@ -52,3 +52,17 @@ export async function getMatches(season, round) {
 
   return response;
 }
+
+export async function sendEmail(tips, roundNumber, name, toEmails, ccEmails) {
+  const bodyParameters = {
+    tips: tips,
+    roundNumber: roundNumber,
+    name: name,
+    toEmails: toEmails,
+    ccEmails: ccEmails,
+  };
+
+  const response = await axios.post("/send-email", bodyParameters)
+
+  return response;
+}

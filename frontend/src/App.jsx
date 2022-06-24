@@ -29,7 +29,7 @@ function App() {
         selectedSeason={selectedSeason}
         selectedRound={selectedRound}
       />
-      <Email />
+      <Email matches={matches} selectedRound={selectedRound} />
     </>
   );
 }
