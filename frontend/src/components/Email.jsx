@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { createRef, useState } from "react";
 import { sendEmail } from "../data/repository";
 import { toast } from "react-toastify";
 import ReCAPTCHA from "react-google-recaptcha";
@@ -10,6 +10,8 @@ export default function Email(props) {
     toEmails: [""],
     ccEmails: [""],
   });
+
+  const recaptchaRef = createRef();
 
   const handleInputChange = event => {
     setFields({ ...fields, [event.target.name]: event.target.value });
@@ -64,9 +66,12 @@ export default function Email(props) {
       tmpMatches,
       selectedRound,
       name,
-      fields.toEmails,
-      fields.ccEmails
+      fields.toEmails.filter(x => x !== ""), // Filter to avoid sending [""]
+      fields.ccEmails.filter(x => x !== ""),
+      recaptchaRef.current.getValue()
     );
+
+    window.grecaptcha.reset();
 
     toast.promise(response, {
       pending: "Sending email...",
@@ -236,6 +241,10 @@ export default function Email(props) {
               </div>
             ))}
           </div>
+          <ReCAPTCHA
+            ref={recaptchaRef}
+            sitekey={process.env.REACT_APP_GOOGLE_RECAPTCHA_SITE_KEY}
+          />
         </form>
       </div>
       <div className="card-footer d-flex justify-content-between">

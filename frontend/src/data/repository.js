@@ -53,13 +53,14 @@ export async function getMatches(season, round) {
   return response;
 }
 
-export async function sendEmail(tips, roundNumber, name, toEmails, ccEmails) {
+export async function sendEmail(tips, roundNumber, name, toEmails, ccEmails, reCaptchaValue) {
   const bodyParameters = {
     tips: tips,
     roundNumber: roundNumber,
     name: name,
     toEmails: toEmails,
     ccEmails: ccEmails,
+    reCaptchaValue: reCaptchaValue
   };
 
   const response = await axios.post("/send-email", bodyParameters)

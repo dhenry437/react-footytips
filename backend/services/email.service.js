@@ -9,8 +9,25 @@ const sendEmailService = async (
   roundNumber,
   name,
   toEmails,
-  ccEmails
+  ccEmails,
+  reCaptchaValue
 ) => {
+  // Verify reCaptcha
+  let requestBody = `secret=${process.env.GOOGLE_RECAPTCHA_SECRET_KEY}&response=${reCaptchaValue}`
+
+  const reCaptchaResponse = await axios.post("https://www.google.com/recaptcha/api/siteverify", requestBody).catch(function (error) {
+    return error.response;
+  });
+
+  console.log(reCaptchaResponse.data);
+
+  if (!reCaptchaResponse.data.success) {
+    return {
+      status: 403,
+      data: "Invalid reCaptcha response"
+    }
+  }
+
   const subject = `${name}'s Round ${roundNumber} Footy Tips`;
 
   let body = "";
@@ -35,15 +52,24 @@ const sendEmailService = async (
     "content-type": "application/json"
   }
 
+  // Set to and cc, if they are empty arrays set undefined
   let to = [];
-  toEmails.forEach((email) => {
-    to.push({ email: email })
-  })
+  if (toEmails.length > 0) {
+    toEmails.forEach((email) => {
+      to.push({ email: email })
+    })
+  } else {
+    to = undefined;
+  }
 
   let cc = [];
-  ccEmails.forEach((email) => {
-    cc.push({ email: email })
-  })
+  if (ccEmails.length > 0) {
+    ccEmails.forEach((email) => {
+      cc.push({ email: email })
+    })
+  } else {
+    cc = undefined;
+  }
 
   const bodyParameters = {
     sender: {
