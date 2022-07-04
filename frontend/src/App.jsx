@@ -12,22 +12,33 @@ function App() {
   );
   const [selectedRound, setSelectedRound] = useState(null);
   const [matches, setMatches] = useState(null);
+  const [currentRound, setCurrentRound] = useState();
+  const [selectedOdds, setSelectedOdds] = useState(null);
 
   return (
     <>
       <ToastContainer autoClose={3000} />
-      <Navbar />
+      <Navbar
+        setMatches={setMatches}
+        selectedSeason={selectedSeason}
+        selectedRound={selectedRound}
+        setSelectedOdds={setSelectedOdds}
+      />
       <RoundSwitcher
         selectedSeason={selectedSeason}
         setSelectedSeason={setSelectedSeason}
         selectedRound={selectedRound}
         setSelectedRound={setSelectedRound}
+        setCurrentRound={setCurrentRound}
       />
       <Matches
         matches={matches}
         setMatches={setMatches}
         selectedSeason={selectedSeason}
         selectedRound={selectedRound}
+        currentRound={currentRound}
+        selectedOdds={selectedOdds}
+        setSelectedOdds={setSelectedOdds}
       />
       <Email matches={matches} selectedRound={selectedRound} />
     </>

@@ -1,13 +1,8 @@
 import React from "react";
 
 export default function RoundSwitcherPagination(props) {
-  const {
-    rounds,
-    selectedRound,
-    handleClickRound,
-    handleClickNavigation,
-    // handleClickCurrent,
-  } = props;
+  const { rounds, selectedRound, handleClickRound, handleClickNavigation } =
+    props;
 
   return (
     <>

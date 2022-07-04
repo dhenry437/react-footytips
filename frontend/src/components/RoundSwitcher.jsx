@@ -1,13 +1,15 @@
-import React from "react";
-import { useEffect } from "react";
-import { useCallback } from "react";
-import { useState } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import { getRounds, getSeasons } from "../data/repository";
 import RoundSwitcherPagination from "./RoundSwitcherPagination";
 
 export default function RoundSwitcher(props) {
-  const { selectedSeason, setSelectedSeason, selectedRound, setSelectedRound } =
-    props;
+  const {
+    selectedSeason,
+    setSelectedSeason,
+    selectedRound,
+    setSelectedRound,
+    setCurrentRound,
+  } = props;
 
   const [loading, setLoading] = useState({ seasons: true, rounds: true });
   const [seasons, setSeaons] = useState(null);
@@ -26,13 +28,19 @@ export default function RoundSwitcher(props) {
     async season => {
       const response = await getRounds(season);
 
-      setRounds(response.data);
+      // currentRound must be a string
+      // res.json is automatically casting it as an int
+      setRounds({
+        ...response.data,
+        currentRound: response.data.currentRound?.toString(),
+      });
       setLoading(loading => {
         return { ...loading, rounds: false };
       });
-      setSelectedRound(response.data.currentRound || "");
+      setSelectedRound(response.data.currentRound?.toString() || "");
+      setCurrentRound(response.data.currentRound?.toString());
     },
-    [setSelectedRound]
+    [setSelectedRound, setCurrentRound]
   );
 
   useEffect(() => {

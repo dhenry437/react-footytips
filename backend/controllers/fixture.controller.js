@@ -4,6 +4,7 @@ const {
   getSeasonsFromDb,
   getRoundsFromDb,
   getMatchesFromDb,
+  getOddsFromApi,
 } = require("../services/fixture.service");
 
 const getFixture = async (req, res) => {
@@ -56,9 +57,24 @@ const getMatches = async (req, res) => {
   res.send(rounds);
 };
 
+const getOdds = async (req, res) => {
+  const season = parseInt(req.query?.season);
+  const round = req.query?.round;
+
+  if (!Number.isInteger(season)) {
+    res.status(400).send('Invalid value for query parameter "season"');
+    return;
+  }
+
+  const rounds = await getOddsFromApi(season, round);
+
+  res.send(rounds);
+};
+
 module.exports = {
   getFixture,
   getSeasons,
   getRounds,
   getMatches,
+  getOdds
 };

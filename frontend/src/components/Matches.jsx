@@ -1,23 +1,50 @@
-import React, { useState, useCallback, useEffect } from "react";
-import { getMatches } from "../data/repository";
+import React, { useState, useCallback, useEffect, Fragment } from "react";
+import { getMatches, getOdds } from "../data/repository";
 
 export default function Matches(props) {
-  const { matches, setMatches, selectedSeason, selectedRound } = props;
+  const {
+    matches,
+    setMatches,
+    selectedSeason,
+    selectedRound,
+    currentRound,
+    selectedOdds,
+    setSelectedOdds,
+  } = props;
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState({ matches: true, odds: false });
 
   const fetchMatchesCallback = useCallback(
     async (season, round) => {
+      setLoading(loading => {
+        return { ...loading, matches: true };
+      });
+
       const response = await getMatches(season, round);
 
       setMatches(response.data);
-      setLoading(false);
+      setLoading(loading => {
+        return { ...loading, matches: false };
+      });
     },
     [setMatches, setLoading]
   );
 
+  const fetchOddsCallback = useCallback(
+    async (season, round) => {
+      setLoading(loading => {
+        return { ...loading, odds: true };
+      });
+      setSelectedOdds(null);
+      const response = await getOdds(season, round);
+
+      setMatches(response.data);
+      setLoading({ matches: false, odds: false });
+    },
+    [setMatches, setLoading, setSelectedOdds]
+  );
+
   useEffect(() => {
-    setLoading(true);
     // ! This seems wrong, could be because of react strict mode
     if (selectedSeason && selectedRound) {
       fetchMatchesCallback(selectedSeason, selectedRound);
@@ -45,18 +72,105 @@ export default function Matches(props) {
     );
   };
 
+  const handleClickFetchOdds = () => {
+    fetchOddsCallback(selectedSeason, selectedRound);
+  };
+
+  const handleChangeOdds = bookmaker => {
+    setSelectedOdds(bookmaker);
+  };
+
+  const oddsBadge = (homeOdds, awayOdds, reverse = false) => {
+    if (!homeOdds && !awayOdds) {
+      return "warning text-dark";
+    }
+
+    let tmp;
+    if (homeOdds > awayOdds) {
+      tmp = "danger";
+    } else if (homeOdds < awayOdds) {
+      tmp = "success";
+    } else {
+      tmp = "warning text-dark";
+    }
+
+    if (reverse) {
+      tmp = tmp === "success" ? "danger" : "success";
+    }
+
+    return tmp;
+  };
+
+  const getBookmakersFromMatches = matches => {
+    return [...new Set(matches.map(x => Object.keys(x.odds)).flat())];
+  };
+
   return (
     <div className="card mt-3 mx-3">
       <div className="card-header">Matches</div>
       <div className="card-body">
-        {loading ? (
-          <div className="d-none d-xl-flex justify-content-center">
+        {loading.matches ? (
+          <div className="d-flex justify-content-center">
             <div className="spinner-border my-5" role="status">
               <span className="visually-hidden">Loading...</span>
             </div>
           </div>
         ) : (
           <>
+            {selectedRound >= currentRound && (
+              <>
+                <div className="d-flex">
+                  <button
+                    className="btn btn-success me-2"
+                    onClick={handleClickFetchOdds}>
+                    Fetch Odds
+                  </button>
+                  {loading.odds ? (
+                    <div className="d-flex justify-content-center flex-grow-1">
+                      <div className="spinner-border" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="d-flex justify-content-start flex-grow-1 flex-wrap">
+                      {matches &&
+                        (matches[0].odds ? (
+                          getBookmakersFromMatches(matches).length > 0 ? (
+                            getBookmakersFromMatches(matches).map(
+                              (bookmaker, i) => (
+                                <Fragment key={i}>
+                                  <input
+                                    type="radio"
+                                    className="btn-check"
+                                    name="odds"
+                                    id={`odds${i}`}
+                                    checked={selectedOdds === bookmaker}
+                                    onChange={() => handleChangeOdds(bookmaker)}
+                                  />
+                                  <label
+                                    className="btn btn-primary btn-sm my-1 me-1"
+                                    htmlFor={`odds${i}`}>
+                                    {bookmaker}
+                                  </label>
+                                </Fragment>
+                              )
+                            )
+                          ) : (
+                            <div className="alert alert-info mb-0 flex-grow-1 text-center p-2">
+                              There are no bookmakers avaliable for this round
+                            </div>
+                          )
+                        ) : (
+                          <div className="alert alert-secondary mb-0 flex-grow-1 text-center p-2">
+                            Click fetch odds to show avaliable bookmakers
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
+                <hr />
+              </>
+            )}
             {matches?.map((match, i) => (
               <div key={i} className="d-flex align-items-center mb-2">
                 <input
@@ -69,6 +183,15 @@ export default function Matches(props) {
                 />
                 <label className="btn btn-outline-primary" htmlFor={`home${i}`}>
                   {match.home_team}
+                  {selectedOdds && match.odds && (
+                    <span
+                      className={`badge bg-${oddsBadge(
+                        match.odds?.[selectedOdds]?.home,
+                        match.odds?.[selectedOdds]?.away
+                      )} ms-2`}>
+                      {`$${match.odds[selectedOdds]?.home || "-.--"}`}
+                    </span>
+                  )}
                   {match.home_points && (
                     <span className="badge bg-secondary ms-2">
                       {match.home_points}
@@ -88,6 +211,16 @@ export default function Matches(props) {
                   className="btn btn-outline-primary me-2"
                   htmlFor={`away${i}`}>
                   {match.away_team}
+                  {selectedOdds && match.odds && (
+                    <span
+                      className={`badge bg-${oddsBadge(
+                        match.odds?.[selectedOdds]?.home,
+                        match.odds?.[selectedOdds]?.away,
+                        true
+                      )} ms-2`}>
+                      {`$${match.odds[selectedOdds]?.away || "-.--"}`}
+                    </span>
+                  )}
                   {match.away_points && (
                     <span className="badge bg-secondary ms-2">
                       {match.away_points}
@@ -102,31 +235,9 @@ export default function Matches(props) {
       </div>
       <div className="card-footer d-flex justify-content-between">
         <div>
-          <div
-            className="btn-group"
-            role="group"
-            aria-label="Button group with nested dropdown">
-            <button type="button" className="btn btn-primary" disabled>
-              Odds
-            </button>
-
-            <div className="btn-group" role="group">
-              <button
-                id="btnGroupDrop1"
-                type="button"
-                className="btn btn-primary dropdown-toggle"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-                disabled></button>
-              <ul className="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                <li>
-                  <a className="dropdown-item" href="#/">
-                    Odds Provider
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
+          <button type="button" className="btn btn-primary" disabled>
+            Favourites
+          </button>
           <button className="btn btn-primary ms-2" onClick={handleClickRandom}>
             Random
           </button>
