@@ -69,16 +69,14 @@ export async function sendEmail(tips, roundNumber, name, toEmails, ccEmails, reC
 
 }
 
-export async function getOdds(season, round) {
-  let config = {};
-  if (season && round) {
-    config.params = {
-      season: season,
-      round: round,
-    };
+export async function getOdds(matches, season, round) {
+  const bodyParameters = {
+    matches: matches,
+    season: season,
+    round: round,
   }
 
-  const response = await axios.get("/odds", config)
+  const response = await axios.post("/odds", bodyParameters)
 
   return response;
 }

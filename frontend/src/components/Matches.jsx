@@ -32,12 +32,12 @@ export default function Matches(props) {
   );
 
   const fetchOddsCallback = useCallback(
-    async (season, round) => {
+    async (matches, season, round) => {
       setLoading(loading => {
         return { ...loading, odds: true };
       });
       setSelectedOdds(null);
-      const response = await getOdds(season, round);
+      const response = await getOdds(matches, season, round);
 
       setMatches(response.data);
       setLoading({ matches: false, odds: false });
@@ -94,7 +94,7 @@ export default function Matches(props) {
   };
 
   const handleClickFetchOdds = () => {
-    fetchOddsCallback(selectedSeason, selectedRound);
+    fetchOddsCallback(matches, selectedSeason, selectedRound);
   };
 
   const handleChangeOdds = bookmaker => {

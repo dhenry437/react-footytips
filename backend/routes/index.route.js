@@ -27,7 +27,7 @@ router.get("/current-round");
 router.get("/matches", getMatches);
 
 // GET /api/odds?season=[YEAR]&round=[ROUND]
-router.get("/odds", getOdds);
+router.post("/odds", getOdds);
 
 router.post("/send-email", sendEmail);
 

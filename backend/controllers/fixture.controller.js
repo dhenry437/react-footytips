@@ -58,15 +58,16 @@ const getMatches = async (req, res) => {
 };
 
 const getOdds = async (req, res) => {
-  const season = parseInt(req.query?.season);
-  const round = req.query?.round;
+  const season = parseInt(req.body?.season);
+  const round = req.body?.round;
+  const matches = req.body?.matches;
 
   if (!Number.isInteger(season)) {
-    res.status(400).send('Invalid value for query parameter "season"');
+    res.status(400).send('Invalid value for body parameter "season"');
     return;
   }
 
-  const rounds = await getOddsFromApi(season, round);
+  const rounds = await getOddsFromApi(matches, season, round);
 
   res.send(rounds);
 };

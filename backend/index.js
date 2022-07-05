@@ -15,7 +15,7 @@ const db = require("./db");
 db.sequelize.sync();
 // db.sequelize.sync({ force: true })
 
-app.use(express.json()); //Used to parse JSON bodies
+app.use(express.json()); // Used to parse JSON bodies
 
 app.use("/api", require("./routes/index.route"));
 
