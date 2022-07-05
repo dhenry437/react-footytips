@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, Fragment } from "react";
+import { toast } from "react-toastify";
 import { getMatches, getOdds } from "../data/repository";
 
 export default function Matches(props) {
@@ -72,6 +73,26 @@ export default function Matches(props) {
     );
   };
 
+  const handleClickFavourites = () => {
+    const choices = ["home", "away"];
+
+    if (matches.some(x => !!x.odds)) {
+      setMatches(
+        matches.map(x => ({
+          ...x,
+          selected:
+            x.odds?.[selectedOdds]?.home === x.odds?.[selectedOdds]?.away
+              ? choices[Math.floor(choices.length * Math.random())]
+              : x.odds?.[selectedOdds]?.home < x.odds?.[selectedOdds]?.away
+              ? "home"
+              : "away",
+        }))
+      );
+    } else {
+      toast.info("You need to fetch the odds first");
+    }
+  };
+
   const handleClickFetchOdds = () => {
     fetchOddsCallback(selectedSeason, selectedRound);
   };
@@ -85,13 +106,15 @@ export default function Matches(props) {
       return "warning text-dark";
     }
 
+    if (homeOdds === awayOdds) {
+      return "warning text-dark";
+    }
+
     let tmp;
     if (homeOdds > awayOdds) {
       tmp = "danger";
-    } else if (homeOdds < awayOdds) {
-      tmp = "success";
     } else {
-      tmp = "warning text-dark";
+      tmp = "success";
     }
 
     if (reverse) {
@@ -134,7 +157,7 @@ export default function Matches(props) {
                   ) : (
                     <div className="d-flex justify-content-start flex-grow-1 flex-wrap">
                       {matches &&
-                        (matches[0].odds ? (
+                        (matches.some(x => !!x.odds) ? (
                           getBookmakersFromMatches(matches).length > 0 ? (
                             getBookmakersFromMatches(matches).map(
                               (bookmaker, i) => (
@@ -235,7 +258,10 @@ export default function Matches(props) {
       </div>
       <div className="card-footer d-flex justify-content-between">
         <div>
-          <button type="button" className="btn btn-primary" disabled>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleClickFavourites}>
             Favourites
           </button>
           <button className="btn btn-primary ms-2" onClick={handleClickRandom}>
