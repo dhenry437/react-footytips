@@ -18,8 +18,10 @@ export default function RoundSwitcherPagination(props) {
           {rounds.map(round => (
             <li
               key={`xl${round}`}
-              className={`page-item${selectedRound === round ? " active" : ""}`}
-              onClick={() => handleClickRound(round)}>
+              className={`page-item${
+                selectedRound === round.toString() ? " active" : ""
+              }`}
+              onClick={() => handleClickRound(round.toString())}>
               <a className="page-link nostyle" href="#/">
                 {round}
               </a>
