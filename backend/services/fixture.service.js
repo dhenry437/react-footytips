@@ -54,7 +54,7 @@ const insertCsvIntoDb = async csvString => {
       Match.bulkCreate(csvRow, { logging: false });
     });
 
-  // Handle the shit that was the begining of 2022
+  // Handle the shit that was the beginning of 2022
   await Match.destroy({
     where: {
       year: 2022,
@@ -70,7 +70,7 @@ const insertCsvIntoDb = async csvString => {
 };
 
 const getSeasonsFromDb = async () => {
-  // Select disticnt values for column year
+  // Select distinct values for column year
   const matches = await Match.findAll({
     attributes: [[Sequelize.fn("DISTINCT", Sequelize.col("year")), "year"]],
   });
@@ -81,7 +81,7 @@ const getSeasonsFromDb = async () => {
 };
 
 const getRoundsFromDb = async season => {
-  // Select disticnt values for column season
+  // Select distinct values for column season
   let matches = await Match.findAll({
     attributes: [
       [Sequelize.fn("DISTINCT", Sequelize.col("round")), "round"],
@@ -97,6 +97,7 @@ const getRoundsFromDb = async season => {
 
   let homeAway = matches.filter(x => x.competition === "HA");
   homeAway = homeAway.map(x => x.round);
+  console.log(homeAway[0]);
 
   let finals = matches.filter(x => x.competition.endsWith("F"));
   finals = finals.map(x => x.competition);
@@ -156,7 +157,7 @@ const getMatchesFromDb = async (year, round) => {
 
   if (!isNaN(round)) {
     matches = await Match.findAll({
-      where: { year: year, round: round },
+      where: { year: year, round: round, competition: "HA" },
     });
   } else if (
     round.toString().includes("QF") &&
