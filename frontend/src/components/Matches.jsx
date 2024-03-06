@@ -193,12 +193,12 @@ export default function Matches(props) {
                               )
                             ) : (
                               <div className="alert alert-info mb-0 flex-grow-1 text-center p-2">
-                                There are no bookmakers avaliable for this round
+                                There are no bookmakers available for this round
                               </div>
                             )
                           ) : (
                             <div className="alert alert-secondary mb-0 flex-grow-1 text-center p-2">
-                              Click fetch odds to show avaliable bookmakers
+                              Click fetch odds to show available bookmakers
                             </div>
                           ))}
                       </div>
