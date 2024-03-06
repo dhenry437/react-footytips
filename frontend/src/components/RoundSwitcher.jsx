@@ -12,13 +12,13 @@ export default function RoundSwitcher(props) {
   } = props;
 
   const [loading, setLoading] = useState({ seasons: true, rounds: true });
-  const [seasons, setSeaons] = useState(null);
+  const [seasons, setSeasons] = useState(null);
   const [rounds, setRounds] = useState(null);
 
   const fetchSeasonsCallback = useCallback(async () => {
     const response = await getSeasons();
 
-    setSeaons(response.data);
+    setSeasons(response.data);
     setLoading(loading => {
       return { ...loading, seasons: false };
     });
@@ -69,7 +69,9 @@ export default function RoundSwitcher(props) {
         homeAway,
         finals,
       }))(rounds)
-    ).flat();
+    )
+      .flat()
+      .map(x => x.toString());
     const currentRoundIndex = roundsFlatArray.indexOf(selectedRound);
 
     if (
