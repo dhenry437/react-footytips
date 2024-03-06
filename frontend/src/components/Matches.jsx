@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect, Fragment } from "react";
 import { toast } from "react-toastify";
 import { getMatches, getOdds } from "../data/repository";
+import { addHoursToDate } from "../util";
 
 export default function Matches(props) {
   const {
@@ -8,7 +9,7 @@ export default function Matches(props) {
     setMatches,
     selectedSeason,
     selectedRound,
-    currentRound,
+    // currentRound,
     selectedOdds,
     setSelectedOdds,
   } = props;
@@ -140,7 +141,16 @@ export default function Matches(props) {
           </div>
         ) : (
           <>
-            {selectedRound >= currentRound && (
+            {/* Show odds widget for rounds with a match in the future (or 6 hours in the past) */}
+            {new Date() <=
+              addHoursToDate(
+                6,
+                new Date(
+                  matches.reduce((a, b) =>
+                    a.gametime > b.gametime ? a : b
+                  ).gametime
+                )
+              ) && (
               <>
                 <div className="d-flex">
                   <button
