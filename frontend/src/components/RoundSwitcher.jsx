@@ -27,18 +27,22 @@ export default function RoundSwitcher(props) {
   const fetchRoundsCallback = useCallback(
     async season => {
       const response = await getRounds(season);
+      const { preliminary, homeAway, finals, currentRound } = response.data;
 
       // currentRound must be a string
       // res.json is automatically casting it as an int
       setRounds({
         ...response.data,
-        currentRound: response.data.currentRound?.toString(),
+        currentRound: currentRound?.toString(),
       });
       setLoading(loading => {
         return { ...loading, rounds: false };
       });
-      setSelectedRound(response.data.currentRound?.toString() || "");
-      setCurrentRound(response.data.currentRound?.toString());
+      setSelectedRound(
+        currentRound?.toString() ||
+          [...preliminary, ...homeAway, ...finals].map(x => x.toString())[0]
+      );
+      setCurrentRound(currentRound?.toString());
     },
     [setSelectedRound, setCurrentRound]
   );
