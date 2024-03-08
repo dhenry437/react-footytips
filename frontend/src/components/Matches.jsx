@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect, Fragment } from "react";
 import { toast } from "react-toastify";
 import { getMatches, getOdds } from "../data/repository";
+import { addHoursToDate } from "../util";
 
 export default function Matches(props) {
   const {
@@ -8,7 +9,7 @@ export default function Matches(props) {
     setMatches,
     selectedSeason,
     selectedRound,
-    currentRound,
+    // currentRound,
     selectedOdds,
     setSelectedOdds,
   } = props;
@@ -140,60 +141,72 @@ export default function Matches(props) {
           </div>
         ) : (
           <>
-            {selectedRound >= currentRound && (
-              <>
-                <div className="d-flex">
-                  <button
-                    className="btn btn-success me-2"
-                    onClick={handleClickFetchOdds}>
-                    Fetch Odds
-                  </button>
-                  {loading.odds ? (
-                    <div className="d-flex justify-content-center flex-grow-1">
-                      <div className="spinner-border" role="status">
-                        <span className="visually-hidden">Loading...</span>
+            {/* Show odds widget for rounds with a match in the future (or 6 hours in the past) */}
+            {matches.length !== 0 &&
+              new Date() <=
+                addHoursToDate(
+                  6,
+                  new Date(
+                    matches.reduce((a, b) =>
+                      a.gametime > b.gametime ? a : b
+                    ).gametime
+                  )
+                ) && (
+                <>
+                  <div className="d-flex">
+                    <button
+                      className="btn btn-success me-2"
+                      onClick={handleClickFetchOdds}>
+                      Fetch Odds
+                    </button>
+                    {loading.odds ? (
+                      <div className="d-flex justify-content-center flex-grow-1">
+                        <div className="spinner-border" role="status">
+                          <span className="visually-hidden">Loading...</span>
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="d-flex justify-content-start flex-grow-1 flex-wrap">
-                      {matches &&
-                        (matches.some(x => !!x.odds) ? (
-                          getBookmakersFromMatches(matches).length > 0 ? (
-                            getBookmakersFromMatches(matches).map(
-                              (bookmaker, i) => (
-                                <Fragment key={i}>
-                                  <input
-                                    type="radio"
-                                    className="btn-check"
-                                    name="odds"
-                                    id={`odds${i}`}
-                                    checked={selectedOdds === bookmaker}
-                                    onChange={() => handleChangeOdds(bookmaker)}
-                                  />
-                                  <label
-                                    className="btn btn-primary btn-sm my-1 me-1"
-                                    htmlFor={`odds${i}`}>
-                                    {bookmaker}
-                                  </label>
-                                </Fragment>
+                    ) : (
+                      <div className="d-flex justify-content-start flex-grow-1 flex-wrap">
+                        {matches &&
+                          (matches.some(x => !!x.odds) ? (
+                            getBookmakersFromMatches(matches).length > 0 ? (
+                              getBookmakersFromMatches(matches).map(
+                                (bookmaker, i) => (
+                                  <Fragment key={i}>
+                                    <input
+                                      type="radio"
+                                      className="btn-check"
+                                      name="odds"
+                                      id={`odds${i}`}
+                                      checked={selectedOdds === bookmaker}
+                                      onChange={() =>
+                                        handleChangeOdds(bookmaker)
+                                      }
+                                    />
+                                    <label
+                                      className="btn btn-primary btn-sm my-1 me-1"
+                                      htmlFor={`odds${i}`}>
+                                      {bookmaker}
+                                    </label>
+                                  </Fragment>
+                                )
                               )
+                            ) : (
+                              <div className="alert alert-info mb-0 flex-grow-1 text-center p-2">
+                                There are no bookmakers available for this round
+                              </div>
                             )
                           ) : (
-                            <div className="alert alert-info mb-0 flex-grow-1 text-center p-2">
-                              There are no bookmakers avaliable for this round
+                            <div className="alert alert-secondary mb-0 flex-grow-1 text-center p-2">
+                              Click fetch odds to show available bookmakers
                             </div>
-                          )
-                        ) : (
-                          <div className="alert alert-secondary mb-0 flex-grow-1 text-center p-2">
-                            Click fetch odds to show avaliable bookmakers
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                </div>
-                <hr />
-              </>
-            )}
+                          ))}
+                      </div>
+                    )}
+                  </div>
+                  <hr />
+                </>
+              )}
             {matches?.map((match, i) => (
               <div key={i} className="d-flex align-items-center mb-2">
                 <input

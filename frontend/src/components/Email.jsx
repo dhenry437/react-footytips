@@ -1,7 +1,12 @@
-import React, { createRef, useState } from "react";
-import { sendEmail } from "../data/repository";
+import React, { createRef, useEffect, useState } from "react";
+import {
+  getEmailFieldsLocalStorage,
+  sendEmail,
+  setEmailFieldsLocalStorage,
+} from "../data/repository";
 import { toast } from "react-toastify";
 import ReCAPTCHA from "react-google-recaptcha";
+import { z } from "zod";
 
 export default function Email(props) {
   const { matches, selectedRound } = props;
@@ -13,8 +18,29 @@ export default function Email(props) {
 
   const recaptchaRef = createRef();
 
+  // On page load, restore fields from local storage
+  useEffect(() => {
+    const emailFieldsSchema = z.object({
+      name: z.string(),
+      toEmails: z.array(z.string()),
+      ccEmails: z.array(z.string()),
+    });
+
+    const emailFields = getEmailFieldsLocalStorage();
+
+    console.log(emailFields);
+    console.log(emailFieldsSchema.safeParse(emailFields).success);
+
+    // If emailFields is does not match schema, do not populate state.
+    // Should also catch undef value from JSON parse error in repository
+    emailFieldsSchema.safeParse(emailFields).success && setFields(emailFields);
+  }, []);
+
   const handleInputChange = event => {
     setFields({ ...fields, [event.target.name]: event.target.value });
+
+    // On field change, save to local storage
+    setEmailFieldsLocalStorage(fields);
   };
 
   const handleArrayInputChange = (event, key, i) => {
@@ -26,6 +52,9 @@ export default function Email(props) {
         ...fields[key].slice(i + 1),
       ],
     });
+
+    // On field change, save to local storage
+    setEmailFieldsLocalStorage(fields);
   };
 
   const handleClickClear = () => {
@@ -107,139 +136,141 @@ export default function Email(props) {
             <label htmlFor="toEmails" className="form-label">
               To
             </label>
-            {fields.toEmails.map((toEmails, i) => (
-              <div key={i} className="input-group mb-3">
-                {i === fields.toEmails.length - 1 ? (
-                  <>
-                    <button
-                      className="btn btn-outline-success d-flex align-items-center"
-                      type="button"
-                      onClick={() => handleClickAddRow("toEmails")}>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        fill="currentColor"
-                        className="bi bi-plus-circle"
-                        viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
-                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
-                      </svg>
-                    </button>
-                    <input
-                      type="email"
-                      className="form-control"
-                      id="toEmails"
-                      name="toEmails"
-                      placeholder="name@example.com"
-                      value={toEmails}
-                      onChange={event => {
-                        handleArrayInputChange(event, "toEmails", i);
-                      }}
-                      required={i === 0}
-                    />
-                  </>
-                ) : (
-                  <>
-                    <button
-                      className="btn btn-outline-danger d-flex align-items-center"
-                      type="button"
-                      onClick={() => handleClickRemoveRow("toEmails", i)}>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        fill="currentColor"
-                        className="bi bi-dash-circle"
-                        viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
-                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z" />
-                      </svg>
-                    </button>
-                    <input
-                      type="email"
-                      className="form-control"
-                      id="toEmails"
-                      name="toEmails"
-                      placeholder="name@example.com"
-                      value={toEmails}
-                      onChange={event => {
-                        handleArrayInputChange(event, "toEmails", i);
-                      }}
-                      required={i === 0}
-                    />
-                  </>
-                )}
-              </div>
-            ))}
+            {fields.toEmails &&
+              fields.toEmails.map((toEmails, i) => (
+                <div key={i} className="input-group mb-3">
+                  {i === fields.toEmails.length - 1 ? (
+                    <>
+                      <button
+                        className="btn btn-outline-success d-flex align-items-center"
+                        type="button"
+                        onClick={() => handleClickAddRow("toEmails")}>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          fill="currentColor"
+                          className="bi bi-plus-circle"
+                          viewBox="0 0 16 16">
+                          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                          <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
+                        </svg>
+                      </button>
+                      <input
+                        type="email"
+                        className="form-control"
+                        id="toEmails"
+                        name="toEmails"
+                        placeholder="name@example.com"
+                        value={toEmails}
+                        onChange={event => {
+                          handleArrayInputChange(event, "toEmails", i);
+                        }}
+                        required={i === 0}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        className="btn btn-outline-danger d-flex align-items-center"
+                        type="button"
+                        onClick={() => handleClickRemoveRow("toEmails", i)}>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          fill="currentColor"
+                          className="bi bi-dash-circle"
+                          viewBox="0 0 16 16">
+                          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                          <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z" />
+                        </svg>
+                      </button>
+                      <input
+                        type="email"
+                        className="form-control"
+                        id="toEmails"
+                        name="toEmails"
+                        placeholder="name@example.com"
+                        value={toEmails}
+                        onChange={event => {
+                          handleArrayInputChange(event, "toEmails", i);
+                        }}
+                        required={i === 0}
+                      />
+                    </>
+                  )}
+                </div>
+              ))}
           </div>
           <div className="col-12">
             <label htmlFor="ccEmails" className="form-label">
               CC
             </label>
-            {fields.ccEmails.map((ccEmails, i) => (
-              <div key={i} className="input-group mb-3">
-                {i === fields.ccEmails.length - 1 ? (
-                  <>
-                    <button
-                      className="btn btn-outline-success d-flex align-items-center"
-                      type="button"
-                      onClick={() => handleClickAddRow("ccEmails")}>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        fill="currentColor"
-                        className="bi bi-plus-circle"
-                        viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
-                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
-                      </svg>
-                    </button>
-                    <input
-                      type="email"
-                      className="form-control"
-                      id="ccEmails"
-                      name="ccEmails"
-                      placeholder="name@example.com"
-                      value={ccEmails}
-                      onChange={event => {
-                        handleArrayInputChange(event, "ccEmails", i);
-                      }}
-                    />
-                  </>
-                ) : (
-                  <>
-                    <button
-                      className="btn btn-outline-danger d-flex align-items-center"
-                      type="button"
-                      onClick={() => handleClickRemoveRow("ccEmails", i)}>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        fill="currentColor"
-                        className="bi bi-dash-circle"
-                        viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
-                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z" />
-                      </svg>
-                    </button>
-                    <input
-                      type="email"
-                      className="form-control"
-                      id="ccEmails"
-                      name="ccEmails"
-                      placeholder="name@example.com"
-                      value={ccEmails}
-                      onChange={event => {
-                        handleArrayInputChange(event, "ccEmails", i);
-                      }}
-                    />
-                  </>
-                )}
-              </div>
-            ))}
+            {fields.ccEmails &&
+              fields.ccEmails.map((ccEmails, i) => (
+                <div key={i} className="input-group mb-3">
+                  {i === fields.ccEmails.length - 1 ? (
+                    <>
+                      <button
+                        className="btn btn-outline-success d-flex align-items-center"
+                        type="button"
+                        onClick={() => handleClickAddRow("ccEmails")}>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          fill="currentColor"
+                          className="bi bi-plus-circle"
+                          viewBox="0 0 16 16">
+                          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                          <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
+                        </svg>
+                      </button>
+                      <input
+                        type="email"
+                        className="form-control"
+                        id="ccEmails"
+                        name="ccEmails"
+                        placeholder="name@example.com"
+                        value={ccEmails}
+                        onChange={event => {
+                          handleArrayInputChange(event, "ccEmails", i);
+                        }}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        className="btn btn-outline-danger d-flex align-items-center"
+                        type="button"
+                        onClick={() => handleClickRemoveRow("ccEmails", i)}>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          fill="currentColor"
+                          className="bi bi-dash-circle"
+                          viewBox="0 0 16 16">
+                          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                          <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z" />
+                        </svg>
+                      </button>
+                      <input
+                        type="email"
+                        className="form-control"
+                        id="ccEmails"
+                        name="ccEmails"
+                        placeholder="name@example.com"
+                        value={ccEmails}
+                        onChange={event => {
+                          handleArrayInputChange(event, "ccEmails", i);
+                        }}
+                      />
+                    </>
+                  )}
+                </div>
+              ))}
           </div>
           <ReCAPTCHA
             ref={recaptchaRef}

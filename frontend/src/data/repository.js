@@ -53,20 +53,30 @@ export async function getMatches(season, round) {
   return response;
 }
 
-export async function sendEmail(tips, roundNumber, name, toEmails, ccEmails, reCaptchaValue) {
+export async function sendEmail(
+  tips,
+  roundNumber,
+  name,
+  toEmails,
+  ccEmails,
+  reCaptchaValue
+) {
   const bodyParameters = {
     tips: tips,
     roundNumber: roundNumber,
     name: name,
     toEmails: toEmails,
     ccEmails: ccEmails,
-    reCaptchaValue: reCaptchaValue
+    reCaptchaValue: reCaptchaValue,
   };
 
-  const response = await axios.post("/send-email", bodyParameters)
+  const response = await axios
+    .post("/send-email", bodyParameters)
+    .catch(function (error) {
+      return error.response;
+    });
 
   return response;
-
 }
 
 export async function getOdds(matches, season, round) {
@@ -74,9 +84,28 @@ export async function getOdds(matches, season, round) {
     matches: matches,
     season: season,
     round: round,
-  }
+  };
 
-  const response = await axios.post("/odds", bodyParameters)
+  const response = await axios
+    .post("/odds", bodyParameters)
+    .catch(function (error) {
+      return error.response;
+    });
 
   return response;
+}
+
+export function setEmailFieldsLocalStorage(fields) {
+  localStorage.setItem("emailFields", JSON.stringify(fields));
+}
+
+export function getEmailFieldsLocalStorage() {
+  let emailFields;
+  try {
+    emailFields = JSON.parse(localStorage.getItem("emailFields"));
+  } catch (e) {
+    localStorage.removeItem("emailFields");
+    return emailFields;
+  }
+  return emailFields;
 }

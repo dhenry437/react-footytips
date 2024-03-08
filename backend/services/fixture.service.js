@@ -2,6 +2,7 @@ const axios = require("axios");
 const csv = require("csvtojson");
 
 const db = require("../db");
+const { addHoursToDate } = require("../util");
 const Sequelize = db.Sequelize;
 const Match = db.matches;
 const Op = Sequelize.Op;
@@ -10,25 +11,25 @@ const ffToOa = {
   "Western Bulldogs": "Western Bulldogs",
   "Brisbane Lions": "Brisbane Lions",
   "St Kilda": "St Kilda Saints",
-  "Carlton": "Carlton Blues",
-  "Sydney": "Sydney Swans",
-  "Essendon": "Essendon Bombers",
+  Carlton: "Carlton Blues",
+  Sydney: "Sydney Swans",
+  Essendon: "Essendon Bombers",
   // ? Hopefully this will hanle when and if
   // ? the Demons change their name back from Naarm
-  "Melbourne": "Melbourne Demons",
-  "Naarm": "Melbourne Demons",
-  "Adelaide": "Adelaide Crows",
+  Melbourne: "Melbourne Demons",
+  Naarm: "Melbourne Demons",
+  Adelaide: "Adelaide Crows",
   "North Melbourne": "North Melbourne Kangaroos",
-  "Geelong": "Geelong Cats",
-  "Collingwood": "Collingwood Magpies",
+  Geelong: "Geelong Cats",
+  Collingwood: "Collingwood Magpies",
   "Gold Coast": "Gold Coast Suns",
   "West Coast": "West Coast Eagles",
-  "Richmond": "Richmond Tigers",
-  "Hawthorn": "Hawthorn Hawks",
-  "GWS": "Greater Western Sydney Giants",
+  Richmond: "Richmond Tigers",
+  Hawthorn: "Hawthorn Hawks",
+  GWS: "Greater Western Sydney Giants",
   "Port Adelaide": "Port Adelaide Power",
-  "Fremantle": "Fremantle Dockers"
-}
+  Fremantle: "Fremantle Dockers",
+};
 
 const getFixtureFromFanfooty = async () => {
   const csvHeader = process.env.FF_CSV_HEADER;
@@ -54,7 +55,7 @@ const insertCsvIntoDb = async csvString => {
       Match.bulkCreate(csvRow, { logging: false });
     });
 
-  // Handle the shit that was the begining of 2022
+  // Handle the shit that was the beginning of 2022
   await Match.destroy({
     where: {
       year: 2022,
@@ -70,7 +71,7 @@ const insertCsvIntoDb = async csvString => {
 };
 
 const getSeasonsFromDb = async () => {
-  // Select disticnt values for column year
+  // Select distinct values for column year
   const matches = await Match.findAll({
     attributes: [[Sequelize.fn("DISTINCT", Sequelize.col("year")), "year"]],
   });
@@ -81,7 +82,7 @@ const getSeasonsFromDb = async () => {
 };
 
 const getRoundsFromDb = async season => {
-  // Select disticnt values for column season
+  // Select distinct values for column season
   let matches = await Match.findAll({
     attributes: [
       [Sequelize.fn("DISTINCT", Sequelize.col("round")), "round"],
@@ -97,6 +98,7 @@ const getRoundsFromDb = async season => {
 
   let homeAway = matches.filter(x => x.competition === "HA");
   homeAway = homeAway.map(x => x.round);
+  console.log(homeAway[0]);
 
   let finals = matches.filter(x => x.competition.endsWith("F"));
   finals = finals.map(x => x.competition);
@@ -112,40 +114,23 @@ const getRoundsFromDb = async season => {
       where: { year: season },
     });
 
-    // Taken from Zeta's answer to https://stackoverflow.com/questions/11795266/find-closest-date-in-array-with-javascript
-    let testDate = new Date();
-    let bestDate = matches.length;
-    let bestDiff = -new Date(0, 0, 0).valueOf();
-    let currDiff = 0;
-    let i;
+    const nextMatch = matches.find(
+      x => new Date(x.gametime) >= addHoursToDate(6, new Date())
+    );
 
-    for (i = 0; i < matches.length; ++i) {
-      currDiff = Math.abs(new Date(matches[i].gametime) - testDate);
-      if (currDiff < bestDiff) {
-        bestDate = i;
-        bestDiff = currDiff;
-      }
-    }
+    console.log(nextMatch);
 
-    const currentRoundDb = await Match.findAll({
-      attributes: ["round", "competition"],
-      where: { year: season, round: matches[bestDate].round },
-    });
-
-    if (
-      currentRoundDb.some(x => x.competition == "QF") &&
-      currentRoundDb.some(x => x.competition == "EF")
-    ) {
+    if (nextMatch.competition == "QF" && nextMatch.competition == "EF") {
       currentRound = "QF and EF";
-    } else if (matches[bestDate].competition !== "HA") {
-      currentRound = matches[bestDate].competition;
+    } else if (nextMatch.competition !== "HA") {
+      currentRound = nextMatch.competition;
     } else {
-      currentRound = matches[bestDate].round;
+      currentRound = nextMatch.round;
     }
   }
 
   if (currentRound) {
-    currentRound.toString()
+    currentRound.toString();
   }
 
   return { preliminary, homeAway, finals, currentRound };
@@ -156,7 +141,7 @@ const getMatchesFromDb = async (year, round) => {
 
   if (!isNaN(round)) {
     matches = await Match.findAll({
-      where: { year: year, round: round },
+      where: { year: year, round: round, competition: "HA" },
     });
   } else if (
     round.toString().includes("QF") &&
@@ -190,7 +175,9 @@ const getMatchesFromDb = async (year, round) => {
 
 const getOddsFromApi = async (matches, year, round) => {
   const odds = await axios
-    .get(`https://api.the-odds-api.com/v4/sports/aussierules_afl/odds/?apiKey=${process.env.ODDS_API_KEY}&regions=au&markets=h2h`)
+    .get(
+      `https://api.the-odds-api.com/v4/sports/aussierules_afl/odds/?apiKey=${process.env.ODDS_API_KEY}&regions=au&markets=h2h`
+    )
     .catch(function (error) {
       return error.response;
     });
@@ -199,8 +186,10 @@ const getOddsFromApi = async (matches, year, round) => {
   matches.forEach((match, i) => {
     matchesAndOdds[i].odds = {};
     odds.data.forEach(odd => {
-      if (odd.home_team === ffToOa[match.home_team] &&
-        odd.away_team === ffToOa[match.away_team]) {
+      if (
+        odd.home_team === ffToOa[match.home_team] &&
+        odd.away_team === ffToOa[match.away_team]
+      ) {
         odd.bookmakers.forEach(bookmaker => {
           matchesAndOdds[i].odds[bookmaker.title] = {};
           bookmaker.markets[0].outcomes.forEach(outcome => {
@@ -209,14 +198,14 @@ const getOddsFromApi = async (matches, year, round) => {
             } else if (outcome.name === odd.away_team) {
               matchesAndOdds[i].odds[bookmaker.title].away = outcome.price;
             }
-          })
-        })
+          });
+        });
       }
-    })
-  })
+    });
+  });
 
   return matchesAndOdds;
-}
+};
 
 module.exports = {
   getFixtureFromFanfooty,
@@ -224,5 +213,5 @@ module.exports = {
   getSeasonsFromDb,
   getRoundsFromDb,
   getMatchesFromDb,
-  getOddsFromApi
+  getOddsFromApi,
 };
