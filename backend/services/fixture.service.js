@@ -98,7 +98,6 @@ const getRoundsFromDb = async season => {
 
   let homeAway = matches.filter(x => x.competition === "HA");
   homeAway = homeAway.map(x => x.round);
-  console.log(homeAway[0]);
 
   let finals = matches.filter(x => x.competition.endsWith("F"));
   finals = finals.map(x => x.competition);
@@ -117,8 +116,6 @@ const getRoundsFromDb = async season => {
     const nextMatch = matches.find(
       x => new Date(x.gametime) >= addHoursToDate(6, new Date())
     );
-
-    console.log(nextMatch);
 
     if (nextMatch.competition == "QF" && nextMatch.competition == "EF") {
       currentRound = "QF and EF";

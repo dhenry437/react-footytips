@@ -28,9 +28,6 @@ export default function Email(props) {
 
     const emailFields = getEmailFieldsLocalStorage();
 
-    console.log(emailFields);
-    console.log(emailFieldsSchema.safeParse(emailFields).success);
-
     // If emailFields is does not match schema, do not populate state.
     // Should also catch undef value from JSON parse error in repository
     emailFieldsSchema.safeParse(emailFields).success && setFields(emailFields);
