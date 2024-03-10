@@ -6,7 +6,7 @@ import reportWebVitals from "./reportWebVitals";
 import axios from "axios";
 
 // Set API URL
-axios.defaults.baseURL = process.env.REACT_APP_API_URL;
+axios.defaults.baseURL = `http://${window.location.hostname}:${process.env.REACT_APP_API_PORT}/api`;
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
