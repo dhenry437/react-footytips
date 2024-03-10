@@ -108,7 +108,7 @@ export default function RoundSwitcher(props) {
         <span>Round</span>
         <div style={{ width: 100 }}>
           {loading.seasons ? (
-            <div className="d-flex justify-content-end align-items-center">
+            <div className="d-flex justify-content-end align-items-center mb-2">
               <div className="spinner-border spinner-border-sm" role="status">
                 <span className="visually-hidden">Loading...</span>
               </div>

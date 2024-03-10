@@ -1,6 +1,8 @@
 require("dotenv-flow").config();
 
 const express = require("express");
+var https = require("https");
+var http = require("http");
 const cors = require("cors");
 var compression = require("compression");
 var helmet = require("helmet");
@@ -26,6 +28,9 @@ app.use(helmet());
 
 app.use("/api", require("./routes/index.route"));
 
-app.listen(process.env.PORT, () => {
-  console.log(`Listening on port ${process.env.PORT}`);
+http.createServer(app).listen(process.env.HTTP_PORT, () => {
+  console.log(`Listening on HTTP port ${process.env.HTTP_PORT}`);
+});
+https.createServer(app).listen(process.env.HTTPS_PORT, () => {
+  console.log(`Listening on HTTPS port ${process.env.HTTPS_PORT}`);
 });
