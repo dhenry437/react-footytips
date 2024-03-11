@@ -46,8 +46,6 @@ const getFixtureFromFanfooty = async () => {
   // ? Postgres does not like null integers of the form "", so we properly set them to null
   csvFixture = csvFixture.replaceAll(/(""|'')(,|\n|\R|$|.?)/g, "null,");
 
-  console.log(csvFixture);
-
   return csvFixture;
 };
 
@@ -78,6 +76,7 @@ const getSeasonsFromDb = async () => {
   // Select distinct values for column year
   const matches = await Match.findAll({
     attributes: [[Sequelize.fn("DISTINCT", Sequelize.col("year")), "year"]],
+    order: [["year", "ASC"]],
   });
   // convert from [{ key: value }, { key: value }, ...] to [value, value, ...]
   seasons = matches.map(x => x.year);
@@ -93,6 +92,7 @@ const getRoundsFromDb = async season => {
       "competition",
     ],
     where: { year: season },
+    order: [["round", "ASC"]],
   });
 
   let preliminary = matches.filter(
@@ -115,6 +115,7 @@ const getRoundsFromDb = async season => {
     matches = await Match.findAll({
       attributes: ["gametime", "round", "competition"],
       where: { year: season },
+      order: [["id", "ASC"]],
     });
 
     const nextMatch = matches.find(
@@ -143,6 +144,7 @@ const getMatchesFromDb = async (year, round) => {
   if (!isNaN(round)) {
     matches = await Match.findAll({
       where: { year: year, round: round, competition: "HA" },
+      order: [["id", "ASC"]],
     });
   } else if (
     round.toString().includes("QF") &&
@@ -150,10 +152,12 @@ const getMatchesFromDb = async (year, round) => {
   ) {
     matches = await Match.findAll({
       where: { year: year, competition: { [Op.or]: ["QF", "EF"] } },
+      order: [["id", "ASC"]],
     });
   } else {
     matches = await Match.findAll({
       where: { year: year, competition: round },
+      order: [["id", "ASC"]],
     });
   }
 
