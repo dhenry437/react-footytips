@@ -1,10 +1,6 @@
-var sqlite3 = require("sqlite3").verbose();
 const { Sequelize } = require("sequelize");
 
-const sequelize = new Sequelize({
-  dialect: "sqlite",
-  storage: "db.sqlite",
-});
+const sequelize = new Sequelize(process.env.DATABASE_URL);
 
 const db = {};
 db.Sequelize = Sequelize;

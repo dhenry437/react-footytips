@@ -42,14 +42,18 @@ const getFixtureFromFanfooty = async () => {
     });
 
   // Prepend CSV column header
-  const csvFixture = `${csvHeader}\n${response.data}`;
+  let csvFixture = `${csvHeader}\n${response.data}`;
+  // ? Postgres does not like null integers of the form "", so we properly set them to null
+  csvFixture = csvFixture.replaceAll(/(""|'')(,|\n|\R|$|.?)/g, "null,");
+
+  console.log(csvFixture);
 
   return csvFixture;
 };
 
 const insertCsvIntoDb = async csvString => {
   Match.destroy({ where: {} });
-  await csv()
+  await csv({ nullObject: true, trim: true })
     .fromString(csvString)
     .then(csvRow => {
       Match.bulkCreate(csvRow, { logging: false });

@@ -14,4 +14,4 @@ benchmarks/graphs
 .env
 .env.development
 
-.sqlite
+*.sqlite
