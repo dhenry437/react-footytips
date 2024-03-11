@@ -48,7 +48,7 @@ const sendEmailService = async (
   body += "  </p>\n";
   body += "  <p>\n";
   body += "    Created using Footy Tips v3<br>\n";
-  body += '    <a href="footytipping.app">footytipping.app</a>\n';
+  body += '    <a href="footytipping.dhnode.com">footytipping.dhnode.com</a>\n';
   body += "  </p>\n";
 
   let config = {};
