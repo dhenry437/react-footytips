@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, Fragment } from "react";
 import { toast } from "react-toastify";
 import { getMatches, getOdds } from "../data/repository";
-import { addHoursToDate } from "../util";
+import * as dayjs from "dayjs";
 
 export default function Matches(props) {
   const {
@@ -132,7 +132,7 @@ export default function Matches(props) {
   return (
     <div className="card mt-3 mx-3">
       <div className="card-header">Matches</div>
-      <div className="card-body">
+      <div className="card-body pb-0">
         {loading.matches ? (
           <div className="d-flex justify-content-center">
             <div className="spinner-border my-5" role="status">
@@ -143,15 +143,14 @@ export default function Matches(props) {
           <>
             {/* Show odds widget for rounds with a match in the future (or 6 hours in the past) */}
             {matches.length !== 0 &&
-              new Date() <=
-                addHoursToDate(
-                  6,
+              dayjs() <=
+                dayjs(
                   new Date(
                     matches.reduce((a, b) =>
                       a.gametime > b.gametime ? a : b
                     ).gametime
                   )
-                ) && (
+                ).add(6, "h") && (
                 <>
                   <div className="d-flex">
                     <button
@@ -207,65 +206,116 @@ export default function Matches(props) {
                   <hr />
                 </>
               )}
-            {matches?.map((match, i) => (
-              <div key={i} className="d-flex align-items-center mb-2">
-                <input
-                  type="radio"
-                  className="btn-check"
-                  name={`match${i}`}
-                  id={`home${i}`}
-                  onChange={() => handleChangeTip(i, "home")}
-                  checked={matches[i].selected === "home"}
-                />
-                <label className="btn btn-outline-primary" htmlFor={`home${i}`}>
-                  {match.home_team}
-                  {selectedOdds && match.odds && (
-                    <span
-                      className={`badge bg-${oddsBadge(
-                        match.odds?.[selectedOdds]?.home,
-                        match.odds?.[selectedOdds]?.away
-                      )} ms-2`}>
-                      {`$${match.odds[selectedOdds]?.home || "-.--"}`}
+            {matches?.map((match, i) => {
+              const {
+                home_team,
+                away_team,
+                home_points,
+                away_points,
+                ground,
+                gametime,
+                odds,
+              } = match;
+              const gametimeObj = new Date(gametime);
+              const gametimeDayjs = dayjs(gametimeObj);
+
+              return (
+                <>
+                  <div
+                    key={i}
+                    className="d-flex align-items-center mb-1 mb-sm-2">
+                    <input
+                      type="radio"
+                      className="btn-check"
+                      name={`match${i}`}
+                      id={`home${i}`}
+                      onChange={() => handleChangeTip(i, "home")}
+                      checked={matches[i].selected === "home"}
+                    />
+                    <label
+                      className="btn btn-outline-primary"
+                      htmlFor={`home${i}`}>
+                      {home_team}
+                      {selectedOdds && odds && (
+                        <span
+                          className={`badge bg-${oddsBadge(
+                            odds?.[selectedOdds]?.home,
+                            odds?.[selectedOdds]?.away
+                          )} ms-2`}>
+                          {`$${odds[selectedOdds]?.home || "-.--"}`}
+                        </span>
+                      )}
+                      {home_points && (
+                        <span className="badge bg-secondary ms-2">
+                          {home_points}
+                        </span>
+                      )}
+                    </label>
+                    <span className="mx-2">vs</span>
+                    <input
+                      type="radio"
+                      className="btn-check"
+                      name={`match${i}`}
+                      id={`away${i}`}
+                      onChange={() => handleChangeTip(i, "away")}
+                      checked={matches[i].selected === "away"}
+                    />
+                    <label
+                      className="btn btn-outline-primary me-2"
+                      htmlFor={`away${i}`}>
+                      {away_team}
+                      {selectedOdds && odds && (
+                        <span
+                          className={`badge bg-${oddsBadge(
+                            odds?.[selectedOdds]?.home,
+                            odds?.[selectedOdds]?.away,
+                            true
+                          )} ms-2`}>
+                          {`$${odds[selectedOdds]?.away || "-.--"}`}
+                        </span>
+                      )}
+                      {away_points && (
+                        <span className="badge bg-secondary ms-2">
+                          {away_points}
+                        </span>
+                      )}
+                    </label>
+                    <div className="d-none d-sm-flex badge-group">
+                      <div className="badge-row">
+                        <span className="badge bg-secondary">
+                          {ground ? ground : "TBC"}
+                        </span>
+                        <span className="badge bg-info">
+                          {gametimeDayjs.format("ddd")}
+                        </span>
+                      </div>
+                      <div className="badge-row">
+                        <span className="badge bg-success">
+                          {gametimeDayjs.format("D/M")}
+                        </span>
+                        <span className="badge bg-warning">
+                          {gametimeDayjs.format("h:mm a")}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="d-flex d-sm-none flex-wrap mb-1">
+                    <span className="badge bg-secondary me-2 mb-1">
+                      {ground ? ground : "TBC"}
                     </span>
-                  )}
-                  {match.home_points && (
-                    <span className="badge bg-secondary ms-2">
-                      {match.home_points}
+                    <span className="badge bg-info me-2 mb-1">
+                      {gametimeDayjs.format("ddd")}
                     </span>
-                  )}
-                </label>
-                <span className="mx-2">vs</span>
-                <input
-                  type="radio"
-                  className="btn-check"
-                  name={`match${i}`}
-                  id={`away${i}`}
-                  onChange={() => handleChangeTip(i, "away")}
-                  checked={matches[i].selected === "away"}
-                />
-                <label
-                  className="btn btn-outline-primary me-2"
-                  htmlFor={`away${i}`}>
-                  {match.away_team}
-                  {selectedOdds && match.odds && (
-                    <span
-                      className={`badge bg-${oddsBadge(
-                        match.odds?.[selectedOdds]?.home,
-                        match.odds?.[selectedOdds]?.away,
-                        true
-                      )} ms-2`}>
-                      {`$${match.odds[selectedOdds]?.away || "-.--"}`}
+                    <span className="badge bg-success me-2 mb-1">
+                      {gametimeDayjs.format("D/M/YY")}
                     </span>
-                  )}
-                  {match.away_points && (
-                    <span className="badge bg-secondary ms-2">
-                      {match.away_points}
+                    <span className="badge bg-warning mb-1">
+                      {gametimeDayjs.format("h:mm a")}
                     </span>
-                  )}
-                </label>
-                <span className="badge bg-secondary">@ {match.ground}</span>
-              </div>
-            ))}
+                  </div>
+                </>
+              );
+            })}
           </>
         )}
       </div>
