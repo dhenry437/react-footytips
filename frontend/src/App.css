@@ -21,3 +21,61 @@ a.nostyle:visited {
   border-top-right-radius: unset;
   border-bottom-right-radius: unset;
 }
+
+.badge-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.badge-row {
+  display: flex;
+}
+
+.badge-group span {
+  flex: 1 1 auto;
+}
+
+.badge-group > .badge-row:first-child:not(:last-child) > span:first-child {
+  border-bottom-left-radius: 0;
+}
+
+.badge-group > .badge-row:first-child:not(:last-child) > span:last-child {
+  border-bottom-right-radius: 0;
+}
+
+.badge-group > .badge-row > span:first-child:not(:last-child) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.badge-group > .badge-row > span:not(:first-child):not(:last-child) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.badge-group > .badge-row > span:last-child:not(:first-child) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.badge-group > .badge-row:last-child:not(:first-child) > span:first-child {
+  border-top-left-radius: 0;
+}
+
+.badge-group > .badge-row:last-child:not(:first-child) > span:last-child {
+  border-top-right-radius: 0;
+}
+
+.badge-group
+  > .badge-row:not(:last-child):not(:first-child)
+  > span:first-child {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.badge-group > .badge-row:not(:last-child):not(:first-child) > span:last-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
