@@ -33,25 +33,31 @@ export default function Email(props) {
     emailFieldsSchema.safeParse(emailFields).success && setFields(emailFields);
   }, []);
 
+  // useEffect(() => {
+  //   setEmailFieldsLocalStorage(fields);
+  // }, [fields]);
+
   const handleInputChange = event => {
-    setFields({ ...fields, [event.target.name]: event.target.value });
+    const tmpFields = { ...fields, [event.target.name]: event.target.value };
+    setFields();
 
     // On field change, save to local storage
-    setEmailFieldsLocalStorage(fields);
+    setEmailFieldsLocalStorage(tmpFields);
   };
 
   const handleArrayInputChange = (event, key, i) => {
-    setFields({
+    const tmpFields = {
       ...fields,
       [key]: [
         ...fields[key].slice(0, i),
         event.target.value,
         ...fields[key].slice(i + 1),
       ],
-    });
+    };
+    setFields(tmpFields);
 
     // On field change, save to local storage
-    setEmailFieldsLocalStorage(fields);
+    setEmailFieldsLocalStorage(tmpFields);
   };
 
   const handleClickClear = () => {

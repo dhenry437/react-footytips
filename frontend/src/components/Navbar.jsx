@@ -25,6 +25,8 @@ export default function Navbar(props) {
         await fetchMatchesCallback(selectedSeason, selectedRound)
       );
 
+      // ! Deal with errors properly
+
       await toast.promise(response, {
         pending: "Refreshing data...",
         success: "Got the data",
