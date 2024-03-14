@@ -5,6 +5,7 @@ const {
   getRoundsFromDb,
   getMatchesFromDb,
   getOddsFromApi,
+  logFixtureRefresh,
 } = require("../services/fixture.service");
 
 const getFixture = async (req, res) => {
@@ -20,8 +21,12 @@ const getFixture = async (req, res) => {
 
   fixtureCsv = await getFixtureFromFanfooty();
   await insertCsvIntoDb(fixtureCsv);
+  await logFixtureRefresh(
+    req,
+    secret === process.env.GET_DATA_SECRET ? "manual" : "auto"
+  );
 
-  res.send("Database refreshed succesfully");
+  res.send("Database refreshed successfully");
 };
 
 const getSeasons = async (req, res) => {
@@ -77,5 +82,5 @@ module.exports = {
   getSeasons,
   getRounds,
   getMatches,
-  getOdds
+  getOdds,
 };
