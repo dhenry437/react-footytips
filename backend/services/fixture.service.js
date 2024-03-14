@@ -5,6 +5,7 @@ const db = require("../db");
 const { addHoursToDate } = require("../util");
 const Sequelize = db.Sequelize;
 const Match = db.matches;
+const UpdateLog = db.updateLog;
 const Op = Sequelize.Op;
 
 const ffToOa = {
@@ -69,6 +70,16 @@ const insertCsvIntoDb = async csvString => {
         ],
       },
     },
+  });
+};
+
+const logFixtureRefresh = async (req, reason) => {
+  // const ip = req.socket.remoteAddress
+  const ip = req.headers["x-forwarded-for"].split(",")[0] || "dev";
+
+  const log = await UpdateLog.create({
+    ip: ip,
+    reason: reason,
   });
 };
 
@@ -215,6 +226,7 @@ const getOddsFromApi = async (matches, year, round) => {
 module.exports = {
   getFixtureFromFanfooty,
   insertCsvIntoDb,
+  logFixtureRefresh,
   getSeasonsFromDb,
   getRoundsFromDb,
   getMatchesFromDb,
