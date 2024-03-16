@@ -1,5 +1,6 @@
 const axios = require("axios");
 const csv = require("csvtojson");
+const dayjs = require("dayjs");
 
 const db = require("../db");
 const { addHoursToDate } = require("../util");
@@ -51,11 +52,11 @@ const getFixtureFromFanfooty = async () => {
 };
 
 const insertCsvIntoDb = async csvString => {
-  Match.destroy({ where: {} });
+  await Match.destroy({ where: {} });
   await csv({ nullObject: true, trim: true })
     .fromString(csvString)
-    .then(csvRow => {
-      Match.bulkCreate(csvRow, { logging: false });
+    .then(async csvRows => {
+      await Match.bulkCreate(csvRows, { logging: false });
     });
 
   // Handle the shit that was the beginning of 2022
@@ -74,13 +75,22 @@ const insertCsvIntoDb = async csvString => {
 };
 
 const logFixtureRefresh = async (req, reason) => {
-  // const ip = req.socket.remoteAddress
-  const ip = req.headers["x-forwarded-for"].split(",")[0] || "dev";
+  const ip = req.headers["x-forwarded-for"]?.split(",")[0] || "dev";
 
-  const log = await UpdateLog.create({
+  const updateLog = await UpdateLog.create({
     ip: ip,
     reason: reason,
   });
+};
+
+const canRefreshFixture = async () => {
+  const lastLog = await UpdateLog.findOne({
+    order: [["updatedAt", "DESC"]],
+  });
+
+  return lastLog
+    ? dayjs().isAfter(dayjs(lastLog.updatedAt).add(10, "minute"))
+    : true;
 };
 
 const getSeasonsFromDb = async () => {
@@ -227,6 +237,7 @@ module.exports = {
   getFixtureFromFanfooty,
   insertCsvIntoDb,
   logFixtureRefresh,
+  canRefreshFixture,
   getSeasonsFromDb,
   getRoundsFromDb,
   getMatchesFromDb,

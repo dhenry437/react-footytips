@@ -236,7 +236,7 @@ export default function Matches(props) {
                       className="btn btn-outline-primary"
                       htmlFor={`home${i}`}>
                       {home_team}
-                      {selectedOdds && odds && (
+                      {selectedOdds && odds && odds[selectedOdds] && (
                         <span
                           className={`badge bg-${oddsBadge(
                             odds?.[selectedOdds]?.home,
@@ -264,7 +264,7 @@ export default function Matches(props) {
                       className="btn btn-outline-primary me-2"
                       htmlFor={`away${i}`}>
                       {away_team}
-                      {selectedOdds && odds && (
+                      {selectedOdds && odds && odds[selectedOdds] && (
                         <span
                           className={`badge bg-${oddsBadge(
                             odds?.[selectedOdds]?.home,
