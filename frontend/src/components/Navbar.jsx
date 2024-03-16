@@ -20,17 +20,20 @@ export default function Navbar(props) {
   const handleClickRefreshData = async () => {
     const secret = window.prompt("Password:");
 
-    if (secret) {
-      const response = refreshData(secret).then(
-        await fetchMatchesCallback(selectedSeason, selectedRound)
-      );
+    if (secret || secret === "") {
+      const t = toast.loading("Please wait...");
 
-      // ! Deal with errors properly
+      const response = await refreshData(secret);
+      const {
+        data: { type, message },
+      } = response;
 
-      await toast.promise(response, {
-        pending: "Refreshing data...",
-        success: "Got the data",
-        error: "Error when fetching data",
+      toast.update(t, {
+        render: message,
+        type,
+        isLoading: false,
+        autoClose: 3000,
+        closeOnClick: true,
       });
     }
   };
