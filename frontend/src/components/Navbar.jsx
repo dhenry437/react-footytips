@@ -1,21 +1,21 @@
-import React, { useCallback } from "react";
-import refreshData, { getMatches } from "../data/repository";
+import React from "react";
+import refreshData from "../data/repository";
 import logo from "../img/logo192.png";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 
 export default function Navbar(props) {
-  const { setMatches, selectedSeason, selectedRound, setSelectedOdds } = props;
+  // const { setMatches, selectedSeason, selectedRound, setSelectedOdds } = props;
 
-  const fetchMatchesCallback = useCallback(
-    async (season, round) => {
-      const response = await getMatches(season, round);
+  // const fetchMatchesCallback = useCallback(
+  //   async (season, round) => {
+  //     const response = await getMatches(season, round);
 
-      setSelectedOdds(null);
-      setMatches(response.data);
-    },
-    [setMatches, setSelectedOdds]
-  );
+  //     setSelectedOdds(null);
+  //     setMatches(response.data);
+  //   },
+  //   [setMatches, setSelectedOdds]
+  // );
 
   const handleClickRefreshData = async () => {
     const secret = window.prompt("Password:");
