@@ -21,8 +21,6 @@ const sendEmailService = async (
       return error.response;
     });
 
-  console.log(reCaptchaResponse.data);
-
   if (!reCaptchaResponse.data.success) {
     console.error("ERROR: reCaptcha validation");
     return {
@@ -35,7 +33,7 @@ const sendEmailService = async (
 
   let body = "";
   body += "<html>\n";
-  body += `  <p>${name}'s Round ${roundNumber} Footy Tips</p>\n`;
+  body += `  <h1>${name}'s Round ${roundNumber} Footy Tips</h1>\n`;
   body += "  <p>\n";
   tips.forEach(match => {
     const { selected, home_team, away_team } = match;
@@ -47,7 +45,7 @@ const sendEmailService = async (
   });
   body += "  </p>\n";
   body += "  <p>\n";
-  body += "    Created using Footy Tips v3<br>\n";
+  body += "    Created using Footy Tipping v3<br>\n";
   body += '    <a href="footytipping.dhnode.com">footytipping.dhnode.com</a>\n';
   body += "  </p>\n";
 
@@ -89,7 +87,7 @@ const sendEmailService = async (
   };
 
   const response = await axios
-    .post("https://api.sendinblue.com/v3/smtp/email", bodyParameters, config)
+    .post("https://api.brevo.com/v3/smtp/email", bodyParameters, config)
     .catch(function (error) {
       return error.response;
     });
