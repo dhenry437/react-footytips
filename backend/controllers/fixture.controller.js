@@ -23,28 +23,6 @@ const getFixture = async (req, res) => {
 
   const { status, data } = await tryRefreshFixture("manual", req);
   return res.status(status).send(data);
-
-  // if (await canRefreshFixture()) {
-  //   try {
-  //     await logFixtureRefresh(
-  //       req,
-  //       secret === process.env.GET_DATA_SECRET ? "manual" : "auto"
-  //     );
-  //     const fixtureCsv = await getFixtureFromFanfooty();
-  //     await insertCsvIntoDb(fixtureCsv);
-  //   } catch (e) {
-  //     console.log(e);
-  //     res
-  //       .status(500)
-  //       .send({ type: "error", message: "An error occurred, check node logs" });
-  //     return;
-  //   }
-  // } else {
-  //   res.status(503).send({ type: "info", message: "Too soon to refresh" });
-  //   return;
-  // }
-
-  // res.send({ type: "success", message: "Database refreshed successfully" });
 };
 
 const tryRefreshFixture = async (reason, req) => {

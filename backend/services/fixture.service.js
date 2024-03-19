@@ -139,11 +139,11 @@ const getRoundsFromDb = async season => {
       order: [["id", "ASC"]],
     });
 
-    const nextMatch = matches.find(
-      x => new Date(x.gametime) >= addHoursToDate(6, new Date())
+    const nextMatch = matches.find(x =>
+      dayjs(x.gametime).isAfter(dayjs().add(6, "hour"))
     );
 
-    if (nextMatch.competition == "QF" && nextMatch.competition == "EF") {
+    if (nextMatch.competition == "QF" || nextMatch.competition == "EF") {
       currentRound = "QF and EF";
     } else if (nextMatch.competition !== "HA") {
       currentRound = nextMatch.competition;
