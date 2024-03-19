@@ -39,7 +39,7 @@ export default function Email(props) {
 
   const handleInputChange = event => {
     const tmpFields = { ...fields, [event.target.name]: event.target.value };
-    setFields();
+    setFields(tmpFields);
 
     // On field change, save to local storage
     setEmailFieldsLocalStorage(tmpFields);
@@ -61,24 +61,36 @@ export default function Email(props) {
   };
 
   const handleClickClear = () => {
-    setFields({
+    const tmpFields = {
       name: "",
       toEmails: [""],
       ccEmails: [""],
-    });
+    };
+    setFields(tmpFields);
+
+    // On field change, save to local storage
+    setEmailFieldsLocalStorage(tmpFields);
   };
 
   const handleClickAddRow = key => {
-    setFields({ ...fields, [key]: [...fields[key], ""] });
+    const tmpFields = { ...fields, [key]: [...fields[key], ""] };
+    setFields(tmpFields);
+
+    // On field change, save to local storage
+    setEmailFieldsLocalStorage(tmpFields);
   };
 
   const handleClickRemoveRow = (key, i) => {
     // This method fails when i = 0 or array length
     // That can never occur
-    setFields({
+    const tmpFields = {
       ...fields,
       [key]: [...fields[key].slice(0, i), ...fields[key].slice(i + 1)],
-    });
+    };
+    setFields(tmpFields);
+
+    // On field change, save to local storage
+    setEmailFieldsLocalStorage(tmpFields);
   };
 
   const handleSubmit = async event => {
