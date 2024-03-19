@@ -33,10 +33,6 @@ export default function Email(props) {
     emailFieldsSchema.safeParse(emailFields).success && setFields(emailFields);
   }, []);
 
-  // useEffect(() => {
-  //   setEmailFieldsLocalStorage(fields);
-  // }, [fields]);
-
   const handleInputChange = event => {
     const tmpFields = { ...fields, [event.target.name]: event.target.value };
     setFields(tmpFields);
@@ -96,6 +92,8 @@ export default function Email(props) {
   const handleSubmit = async event => {
     event.preventDefault();
 
+    const t = toast.loading("Sending email...");
+
     // Save the value of name incase it is changed while promise is pending
     const name = fields.name;
 
@@ -106,7 +104,7 @@ export default function Email(props) {
       selected,
     }));
 
-    let response = sendEmail(
+    let response = await sendEmail(
       tmpMatches,
       selectedRound,
       name,
@@ -114,13 +112,18 @@ export default function Email(props) {
       fields.ccEmails.filter(x => x !== ""),
       recaptchaRef.current.getValue()
     );
+    const {
+      data: { type, message },
+    } = response;
 
     window.grecaptcha.reset();
 
-    toast.promise(response, {
-      pending: "Sending email...",
-      success: `Email sent to ${fields.toEmails.join(", ")}`,
-      error: "Error while sending email",
+    toast.update(t, {
+      render: message,
+      type,
+      isLoading: false,
+      autoClose: 3000,
+      closeOnClick: true,
     });
   };
 
