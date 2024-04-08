@@ -92,6 +92,14 @@ export default function Email(props) {
   const handleSubmit = async event => {
     event.preventDefault();
 
+    const recaptchaValue = recaptchaRef.current.getValue();
+    if (!recaptchaValue) {
+      toast.warn('You must tick the box "I\'m not a robot"', {
+        autoClose: 3000,
+      });
+      return;
+    }
+
     const t = toast.loading("Sending email...");
 
     // Save the value of name incase it is changed while promise is pending

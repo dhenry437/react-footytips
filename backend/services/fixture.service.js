@@ -132,15 +132,32 @@ const getRoundsFromDb = async season => {
   }
 
   let currentRound = null;
+  let fixtureRequiresRefresh = false;
   if (season === new Date().getFullYear()) {
     matches = await Match.findAll({
-      attributes: ["gametime", "round", "competition"],
+      attributes: [
+        "gametime",
+        "home_points",
+        "away_points",
+        "round",
+        "competition",
+      ],
       where: { year: season },
       order: [["id", "ASC"]],
     });
 
+    for (let match of matches) {
+      const { gametime, home_points, away_points, round } = match;
+      if (dayjs().isAfter(dayjs(gametime).add(3, "hour"))) {
+        if (!home_points || !away_points) {
+          fixtureRequiresRefresh = { round, gametime };
+          break;
+        }
+      }
+    }
+
     const nextMatch = matches.find(x =>
-      dayjs(x.gametime).isAfter(dayjs().add(6, "hour"))
+      dayjs(x.gametime).add(6, "hour").isAfter(dayjs())
     );
 
     if (nextMatch.competition == "QF" || nextMatch.competition == "EF") {
@@ -151,12 +168,23 @@ const getRoundsFromDb = async season => {
       currentRound = nextMatch.round;
     }
   }
+  currentRound.toString();
 
-  if (currentRound) {
-    currentRound.toString();
-  }
+  console.log({
+    preliminary,
+    homeAway,
+    finals,
+    currentRound,
+    fixtureRequiresRefresh,
+  });
 
-  return { preliminary, homeAway, finals, currentRound };
+  return {
+    preliminary,
+    homeAway,
+    finals,
+    currentRound,
+    fixtureRequiresRefresh,
+  };
 };
 
 const getMatchesFromDb = async (year, round) => {
