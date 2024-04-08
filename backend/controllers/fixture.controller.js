@@ -66,6 +66,30 @@ const getRounds = async (req, res) => {
   }
 
   const rounds = await getRoundsFromDb(season);
+  const { fixtureRequiresRefresh } = rounds;
+
+  // ? If a match is 3 hours in the past but with no scores,
+  // ? should indicate a db refresh is needed
+
+  if (fixtureRequiresRefresh) {
+    console.log("INFO: Auto refresh is needed");
+    if (await canRefreshFixture()) {
+      const { round, gametime } = fixtureRequiresRefresh;
+      console.log("INFO: Auto refresh fixture");
+      const resTryRefreshFixture = await tryRefreshFixture(
+        `round ${round} match at time ${dayjs(gametime).format(
+          "DD/MM/YYYY HH:mm:ss"
+        )} is in the past with no scores`,
+        req
+      );
+      if (resTryRefreshFixture.status === 200) {
+        await getRounds(req, res);
+      }
+      return;
+    } else {
+      console.log("INFO: Too soon to refresh");
+    }
+  }
 
   res.send(rounds);
 };
@@ -80,28 +104,6 @@ const getMatches = async (req, res) => {
   }
 
   const matches = await getMatchesFromDb(season, round);
-
-  // ? If a match is 3 hours in the past but with no scores,
-  // ? should indicate a db refresh is needed
-  if (await canRefreshFixture()) {
-    for (let match of matches) {
-      const { gametime, home_points, away_points } = match;
-      if (dayjs().isAfter(dayjs(gametime).add(3, "hour"))) {
-        if (!home_points || !away_points) {
-          const resTryRefreshFixture = await tryRefreshFixture(
-            `round ${round} match at time ${dayjs(gametime).format(
-              "DD/MM/YYYY HH:mm:ss"
-            )} is in the past with no scores`,
-            req
-          );
-          if (resTryRefreshFixture.status === 200) {
-            await getMatches(req, res);
-          }
-          return;
-        }
-      }
-    }
-  }
 
   res.send(matches);
 };
