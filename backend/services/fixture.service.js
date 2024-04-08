@@ -140,7 +140,7 @@ const getRoundsFromDb = async season => {
     });
 
     const nextMatch = matches.find(x =>
-      dayjs(x.gametime).isAfter(dayjs().add(6, "hour"))
+      dayjs(x.gametime).add(6, "hour").isAfter(dayjs())
     );
 
     if (nextMatch.competition == "QF" || nextMatch.competition == "EF") {
