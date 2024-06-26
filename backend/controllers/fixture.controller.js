@@ -66,6 +66,10 @@ const getRounds = async (req, res) => {
   }
 
   const rounds = await getRoundsFromDb(season);
+  if (!rounds) {
+    res.status(500).send({ type: "danger", message: "Error fetching rounds" });
+    return;
+  }
   const { fixtureRequiresRefresh } = rounds;
 
   // ? If a match is 3 hours in the past but with no scores,
@@ -91,7 +95,7 @@ const getRounds = async (req, res) => {
     }
   }
 
-  res.send(rounds);
+  res.status(200).send(rounds);
 };
 
 const getMatches = async (req, res) => {

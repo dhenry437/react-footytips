@@ -14,6 +14,7 @@ export default function RoundSwitcher(props) {
   const [loading, setLoading] = useState({ seasons: true, rounds: true });
   const [seasons, setSeasons] = useState(null);
   const [rounds, setRounds] = useState(null);
+  const [error, setError] = useState({ seasons: null, rounds: null });
 
   const fetchSeasonsCallback = useCallback(async () => {
     const response = await getSeasons();
@@ -27,6 +28,11 @@ export default function RoundSwitcher(props) {
   const fetchRoundsCallback = useCallback(
     async season => {
       const response = await getRounds(season);
+      if (response.status !== 200) {
+        setLoading(loading => ({ ...loading, rounds: false }));
+        setError(error => ({ ...error, rounds: response.data }));
+        return;
+      }
       const { preliminary, homeAway, finals, currentRound } = response.data;
 
       // currentRound must be a string
@@ -142,6 +148,10 @@ export default function RoundSwitcher(props) {
               </div>
             </div>
           </>
+        ) : error && !rounds ? (
+          <div className={`alert alert-${error.rounds.type} mb-0`}>
+            {error.rounds.message}
+          </div>
         ) : (
           <>
             <div className="d-none d-xl-block">

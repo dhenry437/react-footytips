@@ -116,6 +116,8 @@ const getRoundsFromDb = async season => {
     order: [["round", "ASC"]],
   });
 
+  if (matches.length === 0) return;
+
   let preliminary = matches.filter(
     x => x.competition.startsWith("P") && x.round === 0
   );
