@@ -128,7 +128,7 @@ export default function RoundSwitcher(props) {
           )}
         </div>
       </div>
-      <div className="card-body pb-1">
+      <div className="card-body">
         {loading.rounds ? (
           <>
             <div className="d-none d-xl-flex justify-content-center">
@@ -136,7 +136,7 @@ export default function RoundSwitcher(props) {
                 <span className="visually-hidden">Loading...</span>
               </div>
             </div>
-            <div className="d-flex d-xl-none justify-content-center">
+            <div className="d-flex d-xl-none justify-content-center py-5">
               <div className="spinner-border" role="status">
                 <span className="visually-hidden">Loading...</span>
               </div>

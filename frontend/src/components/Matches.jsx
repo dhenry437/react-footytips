@@ -132,10 +132,10 @@ export default function Matches(props) {
   return (
     <div className="card mt-3 mx-3">
       <div className="card-header">Matches</div>
-      <div className="card-body pb-0">
+      <div className="card-body">
         {loading.matches ? (
-          <div className="d-flex justify-content-center">
-            <div className="spinner-border my-5" role="status">
+          <div className="d-flex justify-content-center py-5">
+            <div className="spinner-border" role="status">
               <span className="visually-hidden">Loading...</span>
             </div>
           </div>
