@@ -4,8 +4,8 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "startdev": "set NODE_ENV=development&& nodemon index.js",
-    "startprod": "set NODE_ENV=production&& nodemon index.js"
+    "start-dev": "set NODE_ENV=development&& nodemon index.js",
+    "start-prod": "set NODE_ENV=production&& nodemon index.js"
   },
   "dependencies": {
     "axios": "^0.27.2",
