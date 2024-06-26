@@ -95,12 +95,14 @@ const canRefreshFixture = async () => {
 
 const getSeasonsFromDb = async () => {
   // Select distinct values for column year
-  const matches = await Match.findAll({
+  const seasons = await Match.findAll({
     attributes: [[Sequelize.fn("DISTINCT", Sequelize.col("year")), "year"]],
     order: [["year", "ASC"]],
   });
+  if (seasons.length === 0) return;
+
   // convert from [{ key: value }, { key: value }, ...] to [value, value, ...]
-  seasons = matches.map(x => x.year);
+  seasons = seasons.map(x => x.year);
 
   return seasons;
 };

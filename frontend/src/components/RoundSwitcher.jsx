@@ -19,6 +19,12 @@ export default function RoundSwitcher(props) {
   const fetchSeasonsCallback = useCallback(async () => {
     const response = await getSeasons();
 
+    if (response.status !== 200) {
+      setLoading(loading => ({ ...loading, seasons: false }));
+      setError(error => ({ ...error, seasons: response.data }));
+      return;
+    }
+
     setSeasons(response.data);
     setLoading(loading => {
       return { ...loading, seasons: false };
@@ -114,10 +120,14 @@ export default function RoundSwitcher(props) {
         <span>Round</span>
         <div style={{ width: 100 }}>
           {loading.seasons ? (
-            <div className="d-flex justify-content-end align-items-center mb-2">
+            <div className="d-flex justify-content-end align-items-center my-1">
               <div className="spinner-border spinner-border-sm" role="status">
                 <span className="visually-hidden">Loading...</span>
               </div>
+            </div>
+          ) : error.seasons && !seasons ? (
+            <div className="d-flex justify-content-end align-items-center my-1">
+              <i class="bi bi-exclamation-circle"></i>
             </div>
           ) : (
             <select
@@ -148,7 +158,7 @@ export default function RoundSwitcher(props) {
               </div>
             </div>
           </>
-        ) : error && !rounds ? (
+        ) : error.rounds && !rounds ? (
           <div className={`alert alert-${error.rounds.type} mb-0`}>
             {error.rounds.message}
           </div>

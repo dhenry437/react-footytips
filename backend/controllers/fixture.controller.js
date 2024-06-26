@@ -54,6 +54,11 @@ const tryRefreshFixture = async (reason, req) => {
 const getSeasons = async (req, res) => {
   const seasons = await getSeasonsFromDb();
 
+  if (!seasons) {
+    res.status(500).send({ type: "danger", message: "Error fetching seasons" });
+    return;
+  }
+
   res.send(seasons);
 };
 
@@ -95,7 +100,7 @@ const getRounds = async (req, res) => {
     }
   }
 
-  res.status(200).send(rounds);
+  res.send(rounds);
 };
 
 const getMatches = async (req, res) => {
