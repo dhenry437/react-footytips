@@ -14,9 +14,16 @@ export default function RoundSwitcher(props) {
   const [loading, setLoading] = useState({ seasons: true, rounds: true });
   const [seasons, setSeasons] = useState(null);
   const [rounds, setRounds] = useState(null);
+  const [error, setError] = useState({ seasons: null, rounds: null });
 
   const fetchSeasonsCallback = useCallback(async () => {
     const response = await getSeasons();
+
+    if (response.status !== 200) {
+      setLoading(loading => ({ ...loading, seasons: false }));
+      setError(error => ({ ...error, seasons: response.data }));
+      return;
+    }
 
     setSeasons(response.data);
     setLoading(loading => {
@@ -27,6 +34,11 @@ export default function RoundSwitcher(props) {
   const fetchRoundsCallback = useCallback(
     async season => {
       const response = await getRounds(season);
+      if (response.status !== 200) {
+        setLoading(loading => ({ ...loading, rounds: false }));
+        setError(error => ({ ...error, rounds: response.data }));
+        return;
+      }
       const { preliminary, homeAway, finals, currentRound } = response.data;
 
       // currentRound must be a string
@@ -108,10 +120,14 @@ export default function RoundSwitcher(props) {
         <span>Round</span>
         <div style={{ width: 100 }}>
           {loading.seasons ? (
-            <div className="d-flex justify-content-end align-items-center mb-2">
+            <div className="d-flex justify-content-end align-items-center my-1">
               <div className="spinner-border spinner-border-sm" role="status">
                 <span className="visually-hidden">Loading...</span>
               </div>
+            </div>
+          ) : error.seasons && !seasons ? (
+            <div className="d-flex justify-content-end align-items-center my-1">
+              <i className="bi bi-exclamation-circle"></i>
             </div>
           ) : (
             <select
@@ -128,7 +144,7 @@ export default function RoundSwitcher(props) {
           )}
         </div>
       </div>
-      <div className="card-body pb-1">
+      <div className="card-body">
         {loading.rounds ? (
           <>
             <div className="d-none d-xl-flex justify-content-center">
@@ -136,12 +152,16 @@ export default function RoundSwitcher(props) {
                 <span className="visually-hidden">Loading...</span>
               </div>
             </div>
-            <div className="d-flex d-xl-none justify-content-center">
+            <div className="d-flex d-xl-none justify-content-center py-5">
               <div className="spinner-border" role="status">
                 <span className="visually-hidden">Loading...</span>
               </div>
             </div>
           </>
+        ) : error.rounds && !rounds ? (
+          <div className={`alert alert-${error.rounds.type} mb-0`}>
+            {error.rounds.message}
+          </div>
         ) : (
           <>
             <div className="d-none d-xl-block">

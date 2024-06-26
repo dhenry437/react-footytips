@@ -306,12 +306,19 @@ export default function Email(props) {
       </div>
       <div className="card-footer d-flex justify-content-between">
         <div>
-          <button type="submit" className="btn btn-primary" form="emailForm">
+          <button
+            type="submit"
+            disabled={!matches || matches.length === 0}
+            className="btn btn-primary"
+            form="emailForm">
             Send
           </button>
         </div>
         <div>
-          <button className="btn btn-danger" onClick={handleClickClear}>
+          <button
+            className="btn btn-danger"
+            disabled={!matches || matches.length === 0}
+            onClick={handleClickClear}>
             Clear Form
           </button>
         </div>

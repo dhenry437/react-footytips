@@ -54,6 +54,11 @@ const tryRefreshFixture = async (reason, req) => {
 const getSeasons = async (req, res) => {
   const seasons = await getSeasonsFromDb();
 
+  if (!seasons) {
+    res.status(500).send({ type: "danger", message: "Error fetching seasons" });
+    return;
+  }
+
   res.send(seasons);
 };
 
@@ -66,6 +71,10 @@ const getRounds = async (req, res) => {
   }
 
   const rounds = await getRoundsFromDb(season);
+  if (!rounds) {
+    res.status(500).send({ type: "danger", message: "Error fetching rounds" });
+    return;
+  }
   const { fixtureRequiresRefresh } = rounds;
 
   // ? If a match is 3 hours in the past but with no scores,

@@ -15,6 +15,7 @@ export default function Matches(props) {
   } = props;
 
   const [loading, setLoading] = useState({ matches: true, odds: false });
+  const [error, setError] = useState({ matches: null, odds: null });
 
   const fetchMatchesCallback = useCallback(
     async (season, round) => {
@@ -50,6 +51,12 @@ export default function Matches(props) {
     // ! This seems wrong, could be because of react strict mode
     if (selectedSeason && selectedRound) {
       fetchMatchesCallback(selectedSeason, selectedRound);
+    } else {
+      setError(error => ({
+        ...error,
+        matches: { type: "secondary", message: "No selection" },
+      }));
+      setLoading(loading => ({ ...loading, matches: false }));
     }
   }, [fetchMatchesCallback, selectedSeason, selectedRound]);
 
@@ -132,12 +139,16 @@ export default function Matches(props) {
   return (
     <div className="card mt-3 mx-3">
       <div className="card-header">Matches</div>
-      <div className="card-body pb-0">
+      <div className="card-body">
         {loading.matches ? (
-          <div className="d-flex justify-content-center">
-            <div className="spinner-border my-5" role="status">
+          <div className="d-flex justify-content-center py-5">
+            <div className="spinner-border" role="status">
               <span className="visually-hidden">Loading...</span>
             </div>
+          </div>
+        ) : error.matches && !matches ? (
+          <div className={`alert alert-${error.matches.type} mb-0`}>
+            {error.matches.message}
           </div>
         ) : (
           <>
@@ -324,15 +335,22 @@ export default function Matches(props) {
           <button
             type="button"
             className="btn btn-primary"
+            disabled={!matches || matches.length === 0}
             onClick={handleClickFavourites}>
             Favourites
           </button>
-          <button className="btn btn-primary ms-2" onClick={handleClickRandom}>
+          <button
+            className="btn btn-primary ms-2"
+            disabled={!matches || matches.length === 0}
+            onClick={handleClickRandom}>
             Random
           </button>
         </div>
         <div>
-          <button className="btn btn-danger" onClick={handleClickClear}>
+          <button
+            className="btn btn-danger"
+            disabled={!matches || matches.length === 0}
+            onClick={handleClickClear}>
             Clear
           </button>
         </div>
