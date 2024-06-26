@@ -214,6 +214,8 @@ const getMatchesFromDb = async (year, round) => {
     });
   }
 
+  if (matches.length === 0) return;
+
   // Keep only the properties we need
   matches = matches.map(
     ({ gametime, home_team, away_team, ground, home_points, away_points }) => ({

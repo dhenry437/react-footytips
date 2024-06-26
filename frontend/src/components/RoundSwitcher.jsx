@@ -127,7 +127,7 @@ export default function RoundSwitcher(props) {
             </div>
           ) : error.seasons && !seasons ? (
             <div className="d-flex justify-content-end align-items-center my-1">
-              <i class="bi bi-exclamation-circle"></i>
+              <i className="bi bi-exclamation-circle"></i>
             </div>
           ) : (
             <select
