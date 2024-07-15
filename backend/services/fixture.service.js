@@ -3,7 +3,6 @@ const csv = require("csvtojson");
 const dayjs = require("dayjs");
 
 const db = require("../db");
-const { addHoursToDate } = require("../util");
 const Sequelize = db.Sequelize;
 const Match = db.matches;
 const UpdateLog = db.updateLog;
@@ -16,7 +15,7 @@ const ffToOa = {
   Carlton: "Carlton Blues",
   Sydney: "Sydney Swans",
   Essendon: "Essendon Bombers",
-  // ? Hopefully this will hanle when and if
+  // ? Hopefully this will handle when and if
   // ? the Demons change their name back from Naarm
   Melbourne: "Melbourne Demons",
   Naarm: "Melbourne Demons",
@@ -33,51 +32,34 @@ const ffToOa = {
   Fremantle: "Fremantle Dockers",
 };
 
-const getFixtureFromFanfooty = async () => {
-  const csvHeader = process.env.FF_CSV_HEADER;
+// Return data from squiggle api as csv for entry into db
+const getFixtureSquiggleApi = async (year, round) => {
+  if (!year) year = dayjs().year();
 
-  // Get the fixture CSV body from the fan footy resource
   const response = await axios
-    .get(process.env.FF_FIXTURE_URL)
+    .get(process.env.SQUIGGLEAPI_URL, {
+      params: { q: "games", year: year, round: round },
+      headers: {
+        "User-Agent": "footytipping.dhnode.com | dhenry437@gmail.com",
+      },
+    })
     .catch(function (error) {
       return error.response;
     });
 
-  // Prepend CSV column header
-  let csvFixture = `${csvHeader}\n${response.data}`;
-  // ? Postgres does not like null integers of the form "", so we properly set them to null
-  csvFixture = csvFixture.replaceAll(/(""|'')(,|\n|\R|$|.?)/g, "null,");
-
-  return csvFixture;
+  return response.data.games;
 };
 
-const insertCsvIntoDb = async csvString => {
-  await Match.destroy({ where: {} });
-  await csv({ nullObject: true, trim: true })
-    .fromString(csvString)
-    .then(async csvRows => {
-      await Match.bulkCreate(csvRows, { logging: false });
-    });
-
-  // Handle the shit that was the beginning of 2022
-  await Match.destroy({
-    where: {
-      year: 2022,
-      competition: "HA",
-      gametime: {
-        [Op.between]: [
-          new Date("2022-01-07 08:15:00.000 +00:00"),
-          new Date("2022-03-13 06:10:00.000 +00:00"),
-        ],
-      },
-    },
-  });
+const insertJsonIntoDb = async json => {
+  await Match.bulkCreate(json, {
+    updateOnDuplicate: ["year", "hteam", "ateam", "round"],
+  }); // { updateOnDuplicate: ["id"] } // ! Depending which approach is right this could cause problems
 };
 
 const logFixtureRefresh = async (req, reason) => {
   const ip = req.headers["x-forwarded-for"]?.split(",")[0] || "dev";
 
-  const updateLog = await UpdateLog.create({
+  await UpdateLog.create({
     ip: ip,
     reason: reason,
   });
@@ -268,8 +250,8 @@ const getOddsFromApi = async (matches, year, round) => {
 };
 
 module.exports = {
-  getFixtureFromFanfooty,
-  insertCsvIntoDb,
+  getFixtureSquiggleApi,
+  insertJsonIntoDb,
   logFixtureRefresh,
   canRefreshFixture,
   getSeasonsFromDb,
