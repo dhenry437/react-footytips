@@ -1,5 +1,3 @@
-const dayjs = require("dayjs");
-
 const {
   getSeasonsFromDb,
   getRoundsFromDb,
@@ -57,6 +55,8 @@ const tryRefreshFixture = async (reason, req) => {
 };
 
 const getSeasons = async (req, res) => {
+  await tryRefreshFixture("page load", req);
+
   const seasons = await getSeasonsFromDb();
 
   if (!seasons) {
@@ -84,26 +84,6 @@ const getRounds = async (req, res) => {
 
   // ? If a match is 3 hours in the past but with no scores,
   // ? should indicate a db refresh is needed
-
-  if (fixtureRequiresRefresh) {
-    console.log("INFO: Auto refresh is needed");
-    if (await canRefreshFixture()) {
-      const { round, gametime } = fixtureRequiresRefresh;
-      console.log("INFO: Auto refresh fixture");
-      const resTryRefreshFixture = await tryRefreshFixture(
-        `round ${round} match at time ${dayjs(gametime).format(
-          "DD/MM/YYYY HH:mm:ss"
-        )} is in the past with no scores`,
-        req
-      );
-      if (resTryRefreshFixture.status === 200) {
-        await getRounds(req, res);
-      }
-      return;
-    } else {
-      console.log("INFO: Too soon to refresh");
-    }
-  }
 
   res.send(rounds);
 };

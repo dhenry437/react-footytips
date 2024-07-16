@@ -122,23 +122,12 @@ const getRoundsFromDb = async season => {
   }
 
   let currentRound = null;
-  let fixtureRequiresRefresh = false;
   if (season === new Date().getFullYear()) {
     matches = await Match.findAll({
       attributes: ["unixtime", "hscore", "ascore", "round", "is_final"],
       where: { year: season },
       order: [["id", "ASC"]],
     });
-
-    for (let match of matches) {
-      const { unixtime, hscore, ascore, round } = match;
-      if (dayjs().isAfter(dayjs.unix(unixtime).add(3, "hour"))) {
-        if (hscore === 0 || ascore === 0) {
-          fixtureRequiresRefresh = { round, unixtime };
-          break;
-        }
-      }
-    }
 
     const nextMatch = matches.find(
       // Add 6 hours to gametime so that it is not instantly the next round
@@ -162,7 +151,6 @@ const getRoundsFromDb = async season => {
     homeAway,
     finals,
     currentRound,
-    fixtureRequiresRefresh,
   };
 };
 
