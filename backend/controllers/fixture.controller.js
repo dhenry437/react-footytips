@@ -1,14 +1,14 @@
 const dayjs = require("dayjs");
 
 const {
-  getFixtureFromFanfooty,
-  insertCsvIntoDb,
   getSeasonsFromDb,
   getRoundsFromDb,
   getMatchesFromDb,
   getOddsFromApi,
   logFixtureRefresh,
   canRefreshFixture,
+  getFixtureSquiggleApi,
+  insertJsonIntoDb,
 } = require("../services/fixture.service");
 
 const getFixture = async (req, res) => {
@@ -26,29 +26,34 @@ const getFixture = async (req, res) => {
 };
 
 const tryRefreshFixture = async (reason, req) => {
-  if (await canRefreshFixture()) {
-    try {
-      await logFixtureRefresh(req, reason);
-      const fixtureCsv = await getFixtureFromFanfooty();
-      await insertCsvIntoDb(fixtureCsv);
-    } catch (e) {
-      console.log(e);
+  if (true) {
+    if (await canRefreshFixture()) {
+      try {
+        await logFixtureRefresh(req, reason);
+        const jsonFixture = await getFixtureSquiggleApi();
+        await insertJsonIntoDb(jsonFixture);
+      } catch (e) {
+        console.log(e);
+        return {
+          status: 500,
+          data: {
+            type: "error",
+            message: "An error occurred, check node logs",
+          },
+        };
+      }
+    } else {
       return {
-        status: 500,
-        data: { type: "error", message: "An error occurred, check node logs" },
+        status: 503,
+        data: { type: "info", message: "Too soon to refresh" },
       };
     }
-  } else {
+
     return {
-      status: 503,
-      data: { type: "info", message: "Too soon to refresh" },
+      status: 200,
+      data: { type: "success", message: "Database refreshed successfully" },
     };
   }
-
-  return {
-    status: 200,
-    data: { type: "success", message: "Database refreshed successfully" },
-  };
 };
 
 const getSeasons = async (req, res) => {

@@ -3,23 +3,32 @@ const csv = require("csvtojson");
 const dayjs = require("dayjs");
 
 const db = require("../db");
-const { addHoursToDate } = require("../util");
 const Sequelize = db.Sequelize;
 const Match = db.matches;
 const UpdateLog = db.updateLog;
 const Op = Sequelize.Op;
 
-const ffToOa = {
+const isFinalDict = {
+  0: "HA",
+  1: "UN",
+  2: "EF",
+  3: "QF",
+  4: "SF",
+  5: "PF",
+  6: "GF",
+};
+const isFinalDictInverse = Object.fromEntries(
+  Object.entries(isFinalDict).map(a => a.reverse())
+);
+
+const squiggleToOa = {
   "Western Bulldogs": "Western Bulldogs",
   "Brisbane Lions": "Brisbane Lions",
   "St Kilda": "St Kilda Saints",
   Carlton: "Carlton Blues",
   Sydney: "Sydney Swans",
   Essendon: "Essendon Bombers",
-  // ? Hopefully this will hanle when and if
-  // ? the Demons change their name back from Naarm
   Melbourne: "Melbourne Demons",
-  Naarm: "Melbourne Demons",
   Adelaide: "Adelaide Crows",
   "North Melbourne": "North Melbourne Kangaroos",
   Geelong: "Geelong Cats",
@@ -28,56 +37,39 @@ const ffToOa = {
   "West Coast": "West Coast Eagles",
   Richmond: "Richmond Tigers",
   Hawthorn: "Hawthorn Hawks",
-  GWS: "Greater Western Sydney Giants",
+  "Greater Western Sydney": "Greater Western Sydney Giants",
   "Port Adelaide": "Port Adelaide Power",
   Fremantle: "Fremantle Dockers",
 };
 
-const getFixtureFromFanfooty = async () => {
-  const csvHeader = process.env.FF_CSV_HEADER;
+// Return data from squiggle api as json for entry into db
+const getFixtureSquiggleApi = async (year, round) => {
+  if (!year) year = dayjs().year();
 
-  // Get the fixture CSV body from the fan footy resource
   const response = await axios
-    .get(process.env.FF_FIXTURE_URL)
+    .get(process.env.SQUIGGLEAPI_URL, {
+      params: { q: "games", year: year, round: round },
+      headers: {
+        "User-Agent": "footytipping.dhnode.com | dhenry437@gmail.com",
+      },
+    })
     .catch(function (error) {
       return error.response;
     });
 
-  // Prepend CSV column header
-  let csvFixture = `${csvHeader}\n${response.data}`;
-  // ? Postgres does not like null integers of the form "", so we properly set them to null
-  csvFixture = csvFixture.replaceAll(/(""|'')(,|\n|\R|$|.?)/g, "null,");
-
-  return csvFixture;
+  return response.data.games;
 };
 
-const insertCsvIntoDb = async csvString => {
-  await Match.destroy({ where: {} });
-  await csv({ nullObject: true, trim: true })
-    .fromString(csvString)
-    .then(async csvRows => {
-      await Match.bulkCreate(csvRows, { logging: false });
-    });
-
-  // Handle the shit that was the beginning of 2022
-  await Match.destroy({
-    where: {
-      year: 2022,
-      competition: "HA",
-      gametime: {
-        [Op.between]: [
-          new Date("2022-01-07 08:15:00.000 +00:00"),
-          new Date("2022-03-13 06:10:00.000 +00:00"),
-        ],
-      },
-    },
-  });
+const insertJsonIntoDb = async json => {
+  await Match.bulkCreate(json, {
+    updateOnDuplicate: ["year", "hteam", "ateam", "round"],
+  }); // { updateOnDuplicate: ["id"] } // ! Depending which approach is right this could cause problems
 };
 
 const logFixtureRefresh = async (req, reason) => {
   const ip = req.headers["x-forwarded-for"]?.split(",")[0] || "dev";
 
-  const updateLog = await UpdateLog.create({
+  await UpdateLog.create({
     ip: ip,
     reason: reason,
   });
@@ -102,9 +94,7 @@ const getSeasonsFromDb = async () => {
   if (seasons.length === 0) return;
 
   // convert from [{ key: value }, { key: value }, ...] to [value, value, ...]
-  seasons = seasons.map(x => x.year);
-
-  return seasons;
+  return seasons.map(x => x.year);
 };
 
 const getRoundsFromDb = async season => {
@@ -112,24 +102,20 @@ const getRoundsFromDb = async season => {
   let matches = await Match.findAll({
     attributes: [
       [Sequelize.fn("DISTINCT", Sequelize.col("round")), "round"],
-      "competition",
+      "is_final",
     ],
     where: { year: season },
     order: [["round", "ASC"]],
   });
 
-  if (matches.length === 0) return;
+  if (matches.length === 0) return; // ? Is this needed?
 
-  let preliminary = matches.filter(
-    x => x.competition.startsWith("P") && x.round === 0
-  );
-  preliminary = preliminary.map(x => x.competition);
-
-  let homeAway = matches.filter(x => x.competition === "HA");
+  let homeAway = matches.filter(x => x.is_final === 0);
   homeAway = homeAway.map(x => x.round);
 
-  let finals = matches.filter(x => x.competition.endsWith("F"));
-  finals = finals.map(x => x.competition);
+  let finals = matches.filter(x => x.is_final !== 0); // Filter finals (is_final != 0)
+  finals = finals.map(x => isFinalDict[x.is_final]); // Map is_final to human readable
+  // Combine QF and EF
   if (finals.includes("QF") && finals.includes("EF")) {
     finals = finals.filter(x => x !== "QF" && x !== "EF");
     finals = ["QF and EF", ...finals];
@@ -139,51 +125,42 @@ const getRoundsFromDb = async season => {
   let fixtureRequiresRefresh = false;
   if (season === new Date().getFullYear()) {
     matches = await Match.findAll({
-      attributes: [
-        "gametime",
-        "home_points",
-        "away_points",
-        "round",
-        "competition",
-      ],
+      attributes: ["unixtime", "hscore", "ascore", "round", "is_final"],
       where: { year: season },
       order: [["id", "ASC"]],
     });
 
     for (let match of matches) {
-      const { gametime, home_points, away_points, round } = match;
-      if (dayjs().isAfter(dayjs(gametime).add(3, "hour"))) {
-        if (!home_points || !away_points) {
-          fixtureRequiresRefresh = { round, gametime };
+      const { unixtime, hscore, ascore, round } = match;
+      if (dayjs().isAfter(dayjs.unix(unixtime).add(3, "hour"))) {
+        if (hscore === 0 || ascore === 0) {
+          fixtureRequiresRefresh = { round, unixtime };
           break;
         }
       }
     }
 
-    const nextMatch = matches.find(x =>
-      dayjs(x.gametime).add(6, "hour").isAfter(dayjs())
+    const nextMatch = matches.find(
+      // Add 6 hours to gametime so that it is not instantly the next round
+      x => dayjs.unix(x.unixtime).add(6, "hour").isAfter(dayjs())
     );
 
-    if (nextMatch.competition == "QF" || nextMatch.competition == "EF") {
+    console.log(nextMatch);
+
+    if (
+      isFinalDict[nextMatch.is_final] == "QF" ||
+      isFinalDict[nextMatch.is_final] == "EF"
+    ) {
       currentRound = "QF and EF";
-    } else if (nextMatch.competition !== "HA") {
-      currentRound = nextMatch.competition;
+    } else if (isFinalDict[nextMatch.is_final] !== "HA") {
+      currentRound = isFinalDict[nextMatch.is_final];
     } else {
       currentRound = nextMatch.round;
     }
   }
   currentRound.toString();
 
-  console.log({
-    preliminary,
-    homeAway,
-    finals,
-    currentRound,
-    fixtureRequiresRefresh,
-  });
-
   return {
-    preliminary,
     homeAway,
     finals,
     currentRound,
@@ -196,7 +173,7 @@ const getMatchesFromDb = async (year, round) => {
 
   if (!isNaN(round)) {
     matches = await Match.findAll({
-      where: { year: year, round: round, competition: "HA" },
+      where: { year: year, round: round, is_final: isFinalDictInverse["HA"] },
       order: [["id", "ASC"]],
     });
   } else if (
@@ -204,12 +181,17 @@ const getMatchesFromDb = async (year, round) => {
     round.toString().includes("EF")
   ) {
     matches = await Match.findAll({
-      where: { year: year, competition: { [Op.or]: ["QF", "EF"] } },
+      where: {
+        year: year,
+        is_final: {
+          [Op.or]: [isFinalDictInverse["QF"], isFinalDictInverse["EF"]],
+        },
+      },
       order: [["id", "ASC"]],
     });
   } else {
     matches = await Match.findAll({
-      where: { year: year, competition: round },
+      where: { year: year, is_final: isFinalDictInverse[round] },
       order: [["id", "ASC"]],
     });
   }
@@ -218,13 +200,14 @@ const getMatchesFromDb = async (year, round) => {
 
   // Keep only the properties we need
   matches = matches.map(
-    ({ gametime, home_team, away_team, ground, home_points, away_points }) => ({
-      gametime,
-      home_team,
-      away_team,
-      ground,
-      home_points,
-      away_points,
+    ({ unixtime, complete, hteam, ateam, venue, hscore, ascore }) => ({
+      unixtime,
+      percentComplete: complete,
+      hteam,
+      ateam,
+      venue,
+      hscore,
+      ascore,
     })
   );
 
@@ -246,11 +229,13 @@ const getOddsFromApi = async (matches, year, round) => {
   matches.forEach((match, i) => {
     matchesAndOdds[i].odds = {};
     odds.data.forEach(odd => {
+      console.log(odd);
       if (
-        odd.home_team === ffToOa[match.home_team] &&
-        odd.away_team === ffToOa[match.away_team]
+        odd.home_team === squiggleToOa[match.hteam] &&
+        odd.away_team === squiggleToOa[match.ateam]
       ) {
         odd.bookmakers.forEach(bookmaker => {
+          console.log(bookmaker.title);
           matchesAndOdds[i].odds[bookmaker.title] = {};
           bookmaker.markets[0].outcomes.forEach(outcome => {
             if (outcome.name === odd.home_team) {
@@ -268,8 +253,8 @@ const getOddsFromApi = async (matches, year, round) => {
 };
 
 module.exports = {
-  getFixtureFromFanfooty,
-  insertCsvIntoDb,
+  getFixtureSquiggleApi,
+  insertJsonIntoDb,
   logFixtureRefresh,
   canRefreshFixture,
   getSeasonsFromDb,
