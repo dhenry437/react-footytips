@@ -24,6 +24,17 @@ export default function Matches(props) {
       });
 
       const response = await getMatches(season, round);
+      if (response.status !== 200) {
+        setLoading(loading => ({ ...loading, matches: false }));
+        setError(error => ({
+          ...error,
+          matches: response.data || {
+            type: "danger",
+            message: "Error fetching matches",
+          },
+        }));
+        return;
+      }
 
       setMatches(response.data);
       setLoading(loading => {

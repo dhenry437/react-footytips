@@ -8,6 +8,16 @@ const Match = db.matches;
 const UpdateLog = db.updateLog;
 const Op = Sequelize.Op;
 
+const isFinalDict = {
+  0: "HA",
+  1: "UN",
+  2: "EF",
+  3: "QF",
+  4: "SF",
+  5: "PF",
+  6: "GF",
+};
+
 const ffToOa = {
   "Western Bulldogs": "Western Bulldogs",
   "Brisbane Lions": "Brisbane Lions",
@@ -32,7 +42,7 @@ const ffToOa = {
   Fremantle: "Fremantle Dockers",
 };
 
-// Return data from squiggle api as csv for entry into db
+// Return data from squiggle api as json for entry into db
 const getFixtureSquiggleApi = async (year, round) => {
   if (!year) year = dayjs().year();
 
@@ -84,9 +94,7 @@ const getSeasonsFromDb = async () => {
   if (seasons.length === 0) return;
 
   // convert from [{ key: value }, { key: value }, ...] to [value, value, ...]
-  seasons = seasons.map(x => x.year);
-
-  return seasons;
+  return seasons.map(x => x.year);
 };
 
 const getRoundsFromDb = async season => {
@@ -94,24 +102,20 @@ const getRoundsFromDb = async season => {
   let matches = await Match.findAll({
     attributes: [
       [Sequelize.fn("DISTINCT", Sequelize.col("round")), "round"],
-      "competition",
+      "is_final",
     ],
     where: { year: season },
     order: [["round", "ASC"]],
   });
 
-  if (matches.length === 0) return;
+  if (matches.length === 0) return; // ? Is this needed?
 
-  let preliminary = matches.filter(
-    x => x.competition.startsWith("P") && x.round === 0
-  );
-  preliminary = preliminary.map(x => x.competition);
-
-  let homeAway = matches.filter(x => x.competition === "HA");
+  let homeAway = matches.filter(x => x.is_final === 0);
   homeAway = homeAway.map(x => x.round);
 
-  let finals = matches.filter(x => x.competition.endsWith("F"));
-  finals = finals.map(x => x.competition);
+  let finals = matches.filter(x => x.is_final !== 0); // Filter finals (is_final != 0)
+  finals = finals.map(x => isFinalDict[x.is_final]); // Map is_final to human readable
+  // Combine QF and EF
   if (finals.includes("QF") && finals.includes("EF")) {
     finals = finals.filter(x => x !== "QF" && x !== "EF");
     finals = ["QF and EF", ...finals];
@@ -121,51 +125,42 @@ const getRoundsFromDb = async season => {
   let fixtureRequiresRefresh = false;
   if (season === new Date().getFullYear()) {
     matches = await Match.findAll({
-      attributes: [
-        "gametime",
-        "home_points",
-        "away_points",
-        "round",
-        "competition",
-      ],
+      attributes: ["unixtime", "hscore", "ascore", "round", "is_final"],
       where: { year: season },
       order: [["id", "ASC"]],
     });
 
     for (let match of matches) {
-      const { gametime, home_points, away_points, round } = match;
-      if (dayjs().isAfter(dayjs(gametime).add(3, "hour"))) {
-        if (!home_points || !away_points) {
-          fixtureRequiresRefresh = { round, gametime };
+      const { unixtime, hscore, ascore, round } = match;
+      if (dayjs().isAfter(dayjs.unix(unixtime).add(3, "hour"))) {
+        if (hscore === 0 || ascore === 0) {
+          fixtureRequiresRefresh = { round, unixtime };
           break;
         }
       }
     }
 
-    const nextMatch = matches.find(x =>
-      dayjs(x.gametime).add(6, "hour").isAfter(dayjs())
+    const nextMatch = matches.find(
+      // Add 6 hours to gametime so that it is not instantly the next round
+      x => dayjs.unix(x.unixtime).add(6, "hour").isAfter(dayjs())
     );
 
-    if (nextMatch.competition == "QF" || nextMatch.competition == "EF") {
+    console.log(nextMatch);
+
+    if (
+      isFinalDict[nextMatch.is_final] == "QF" ||
+      isFinalDict[nextMatch.is_final] == "EF"
+    ) {
       currentRound = "QF and EF";
-    } else if (nextMatch.competition !== "HA") {
-      currentRound = nextMatch.competition;
+    } else if (isFinalDict[nextMatch.is_final] !== "HA") {
+      currentRound = isFinalDict[nextMatch.is_final];
     } else {
       currentRound = nextMatch.round;
     }
   }
   currentRound.toString();
 
-  console.log({
-    preliminary,
-    homeAway,
-    finals,
-    currentRound,
-    fixtureRequiresRefresh,
-  });
-
   return {
-    preliminary,
     homeAway,
     finals,
     currentRound,
