@@ -145,8 +145,6 @@ const getRoundsFromDb = async season => {
       x => dayjs.unix(x.unixtime).add(6, "hour").isAfter(dayjs())
     );
 
-    console.log(nextMatch);
-
     if (
       isFinalDict[nextMatch.is_final] == "QF" ||
       isFinalDict[nextMatch.is_final] == "EF"
@@ -229,13 +227,11 @@ const getOddsFromApi = async (matches, year, round) => {
   matches.forEach((match, i) => {
     matchesAndOdds[i].odds = {};
     odds.data.forEach(odd => {
-      console.log(odd);
       if (
         odd.home_team === squiggleToOa[match.hteam] &&
         odd.away_team === squiggleToOa[match.ateam]
       ) {
         odd.bookmakers.forEach(bookmaker => {
-          console.log(bookmaker.title);
           matchesAndOdds[i].odds[bookmaker.title] = {};
           bookmaker.markets[0].outcomes.forEach(outcome => {
             if (outcome.name === odd.home_team) {

@@ -5,8 +5,6 @@ const cors = require("cors");
 var compression = require("compression");
 var helmet = require("helmet");
 
-console.log(`CLIENT_CORS_ORIGIN = ${process.env.CLIENT_CORS_ORIGIN}`);
-
 const corsOptions = {
   origin: process.env.CLIENT_CORS_ORIGIN,
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
