@@ -21,17 +21,14 @@ const isFinalDictInverse = Object.fromEntries(
   Object.entries(isFinalDict).map(a => a.reverse())
 );
 
-const ffToOa = {
+const squiggleToOa = {
   "Western Bulldogs": "Western Bulldogs",
   "Brisbane Lions": "Brisbane Lions",
   "St Kilda": "St Kilda Saints",
   Carlton: "Carlton Blues",
   Sydney: "Sydney Swans",
   Essendon: "Essendon Bombers",
-  // ? Hopefully this will handle when and if
-  // ? the Demons change their name back from Naarm
   Melbourne: "Melbourne Demons",
-  Naarm: "Melbourne Demons",
   Adelaide: "Adelaide Crows",
   "North Melbourne": "North Melbourne Kangaroos",
   Geelong: "Geelong Cats",
@@ -40,7 +37,7 @@ const ffToOa = {
   "West Coast": "West Coast Eagles",
   Richmond: "Richmond Tigers",
   Hawthorn: "Hawthorn Hawks",
-  GWS: "Greater Western Sydney Giants",
+  "Greater Western Sydney": "Greater Western Sydney Giants",
   "Port Adelaide": "Port Adelaide Power",
   Fremantle: "Fremantle Dockers",
 };
@@ -232,11 +229,13 @@ const getOddsFromApi = async (matches, year, round) => {
   matches.forEach((match, i) => {
     matchesAndOdds[i].odds = {};
     odds.data.forEach(odd => {
+      console.log(odd);
       if (
-        odd.home_team === ffToOa[match.home_team] &&
-        odd.away_team === ffToOa[match.away_team]
+        odd.home_team === squiggleToOa[match.hteam] &&
+        odd.away_team === squiggleToOa[match.ateam]
       ) {
         odd.bookmakers.forEach(bookmaker => {
+          console.log(bookmaker.title);
           matchesAndOdds[i].odds[bookmaker.title] = {};
           bookmaker.markets[0].outcomes.forEach(outcome => {
             if (outcome.name === odd.home_team) {
