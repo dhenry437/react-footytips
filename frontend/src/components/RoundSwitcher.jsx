@@ -36,10 +36,16 @@ export default function RoundSwitcher(props) {
       const response = await getRounds(season);
       if (response.status !== 200) {
         setLoading(loading => ({ ...loading, rounds: false }));
-        setError(error => ({ ...error, rounds: response.data }));
+        setError(error => ({
+          ...error,
+          rounds: response.data || {
+            type: "danger",
+            message: "Error fetching rounds",
+          },
+        }));
         return;
       }
-      const { preliminary, homeAway, finals, currentRound } = response.data;
+      const { homeAway, finals, currentRound } = response.data;
 
       // currentRound must be a string
       // res.json is automatically casting it as an int
@@ -52,7 +58,7 @@ export default function RoundSwitcher(props) {
       });
       setSelectedRound(
         currentRound?.toString() ||
-          [...preliminary, ...homeAway, ...finals].map(x => x.toString())[0]
+          [...homeAway, ...finals].map(x => x.toString())[0]
       );
       setCurrentRound(currentRound?.toString());
     },
@@ -80,8 +86,7 @@ export default function RoundSwitcher(props) {
 
   const handleClickNavigation = direction => {
     const roundsFlatArray = Object.values(
-      (({ preliminary, homeAway, finals }) => ({
-        preliminary,
+      (({ homeAway, finals }) => ({
         homeAway,
         finals,
       }))(rounds)
@@ -125,7 +130,7 @@ export default function RoundSwitcher(props) {
                 <span className="visually-hidden">Loading...</span>
               </div>
             </div>
-          ) : error.seasons && !seasons ? (
+          ) : error.seasons || !seasons ? (
             <div className="d-flex justify-content-end align-items-center my-1">
               <i className="bi bi-exclamation-circle"></i>
             </div>
@@ -158,20 +163,13 @@ export default function RoundSwitcher(props) {
               </div>
             </div>
           </>
-        ) : error.rounds && !rounds ? (
-          <div className={`alert alert-${error.rounds.type} mb-0`}>
-            {error.rounds.message}
+        ) : error.rounds || !rounds ? (
+          <div className={`alert alert-${error.rounds?.type || "danger"} mb-0`}>
+            {error.rounds?.message || "Error fetching rounds"}
           </div>
         ) : (
           <>
             <div className="d-none d-xl-block">
-              <RoundSwitcherPagination
-                rounds={rounds.preliminary}
-                selectedRound={selectedRound}
-                handleClickRound={handleClickRound}
-                handleClickNavigation={handleClickNavigation}
-                handleClickCurrent={handleClickCurrent}
-              />
               <RoundSwitcherPagination
                 rounds={rounds.homeAway}
                 selectedRound={selectedRound}
