@@ -17,6 +17,9 @@ const isFinalDict = {
   5: "PF",
   6: "GF",
 };
+const isFinalDictInverse = Object.fromEntries(
+  Object.entries(isFinalDict).map(a => a.reverse())
+);
 
 const ffToOa = {
   "Western Bulldogs": "Western Bulldogs",
@@ -173,7 +176,7 @@ const getMatchesFromDb = async (year, round) => {
 
   if (!isNaN(round)) {
     matches = await Match.findAll({
-      where: { year: year, round: round, competition: "HA" },
+      where: { year: year, round: round, is_final: isFinalDictInverse["HA"] },
       order: [["id", "ASC"]],
     });
   } else if (
@@ -181,12 +184,17 @@ const getMatchesFromDb = async (year, round) => {
     round.toString().includes("EF")
   ) {
     matches = await Match.findAll({
-      where: { year: year, competition: { [Op.or]: ["QF", "EF"] } },
+      where: {
+        year: year,
+        is_final: {
+          [Op.or]: [isFinalDictInverse["QF"], isFinalDictInverse["EF"]],
+        },
+      },
       order: [["id", "ASC"]],
     });
   } else {
     matches = await Match.findAll({
-      where: { year: year, competition: round },
+      where: { year: year, is_final: isFinalDictInverse[round] },
       order: [["id", "ASC"]],
     });
   }
@@ -195,13 +203,14 @@ const getMatchesFromDb = async (year, round) => {
 
   // Keep only the properties we need
   matches = matches.map(
-    ({ gametime, home_team, away_team, ground, home_points, away_points }) => ({
-      gametime,
-      home_team,
-      away_team,
-      ground,
-      home_points,
-      away_points,
+    ({ unixtime, complete, hteam, ateam, venue, hscore, ascore }) => ({
+      unixtime,
+      percentComplete: complete,
+      hteam,
+      ateam,
+      venue,
+      hscore,
+      ascore,
     })
   );
 

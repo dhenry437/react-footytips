@@ -9,7 +9,6 @@ export default function Matches(props) {
     setMatches,
     selectedSeason,
     selectedRound,
-    // currentRound,
     selectedOdds,
     setSelectedOdds,
   } = props;
@@ -166,13 +165,12 @@ export default function Matches(props) {
             {/* Show odds widget for rounds with a match in the future (or 6 hours in the past) */}
             {matches.length !== 0 &&
               dayjs() <=
-                dayjs(
-                  new Date(
-                    matches.reduce((a, b) =>
-                      a.gametime > b.gametime ? a : b
-                    ).gametime
+                dayjs
+                  .unix(
+                    matches.reduce((a, b) => (a.unixtime > b.unixtime ? a : b))
+                      .unixtime
                   )
-                ).add(6, "h") && (
+                  .add(6, "h") && (
                 <>
                   <div className="d-flex">
                     <button
@@ -230,16 +228,16 @@ export default function Matches(props) {
               )}
             {matches?.map((match, i) => {
               const {
-                home_team,
-                away_team,
-                home_points,
-                away_points,
-                ground,
-                gametime,
+                hteam,
+                ateam,
+                hscore,
+                ascore,
+                venue,
+                unixtime,
+                percentComplete,
                 odds,
               } = match;
-              const gametimeObj = new Date(gametime);
-              const gametimeDayjs = dayjs(gametimeObj);
+              const unixtimeDayjs = dayjs.unix(unixtime);
 
               return (
                 <>
@@ -257,7 +255,7 @@ export default function Matches(props) {
                     <label
                       className="btn btn-outline-primary"
                       htmlFor={`home${i}`}>
-                      {home_team}
+                      {hteam || "TBD"}
                       {selectedOdds && odds && odds[selectedOdds] && (
                         <span
                           className={`badge bg-${oddsBadge(
@@ -267,10 +265,12 @@ export default function Matches(props) {
                           {`$${odds[selectedOdds]?.home || "-.--"}`}
                         </span>
                       )}
-                      {home_points && (
+                      {percentComplete ? (
                         <span className="badge bg-secondary ms-2">
-                          {home_points}
+                          {hscore}
                         </span>
+                      ) : (
+                        <></>
                       )}
                     </label>
                     <span className="mx-2">vs</span>
@@ -285,7 +285,7 @@ export default function Matches(props) {
                     <label
                       className="btn btn-outline-primary me-2"
                       htmlFor={`away${i}`}>
-                      {away_team}
+                      {ateam || "TBD"}
                       {selectedOdds && odds && odds[selectedOdds] && (
                         <span
                           className={`badge bg-${oddsBadge(
@@ -296,43 +296,46 @@ export default function Matches(props) {
                           {`$${odds[selectedOdds]?.away || "-.--"}`}
                         </span>
                       )}
-                      {away_points && (
+
+                      {percentComplete ? (
                         <span className="badge bg-secondary ms-2">
-                          {away_points}
+                          {ascore}
                         </span>
+                      ) : (
+                        <></>
                       )}
                     </label>
                     <div className="d-none d-sm-flex badge-group">
                       <div className="badge-row">
                         <span className="badge bg-secondary">
-                          {ground ? ground : "TBC"}
+                          {venue ? venue : "TBC"}
                         </span>
                         <span className="badge bg-info">
-                          {gametimeDayjs.format("ddd")}
+                          {unixtimeDayjs.format("ddd")}
                         </span>
                       </div>
                       <div className="badge-row">
                         <span className="badge bg-success">
-                          {gametimeDayjs.format("D/M")}
+                          {unixtimeDayjs.format("D/M")}
                         </span>
                         <span className="badge bg-warning">
-                          {gametimeDayjs.format("h:mm a")}
+                          {unixtimeDayjs.format("h:mm a")}
                         </span>
                       </div>
                     </div>
                   </div>
                   <div className="d-flex d-sm-none flex-wrap mb-1">
                     <span className="badge bg-secondary me-2 mb-1">
-                      {ground ? ground : "TBC"}
+                      {venue ? venue : "TBC"}
                     </span>
                     <span className="badge bg-info me-2 mb-1">
-                      {gametimeDayjs.format("ddd")}
+                      {unixtimeDayjs.format("ddd")}
                     </span>
                     <span className="badge bg-success me-2 mb-1">
-                      {gametimeDayjs.format("D/M/YY")}
+                      {unixtimeDayjs.format("D/M/YY")}
                     </span>
                     <span className="badge bg-warning mb-1">
-                      {gametimeDayjs.format("h:mm a")}
+                      {unixtimeDayjs.format("h:mm a")}
                     </span>
                   </div>
                 </>
