@@ -199,8 +199,8 @@ export default function RoundSwitcher(props) {
                   }))(rounds)
                 )
                   .flat()
-                  .map(round => (
-                    <option key={round} value={round}>
+                  .map((round, i) => (
+                    <option key={i} value={round}>
                       {round}
                     </option>
                   ))}
