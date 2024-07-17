@@ -300,7 +300,7 @@ export default function Email(props) {
           </div>
           <ReCAPTCHA
             ref={recaptchaRef}
-            sitekey={process.env.REACT_APP_GOOGLE_RECAPTCHA_SITE_KEY}
+            sitekey={import.meta.env.VITE_GOOGLE_RECAPTCHA_SITE_KEY}
           />
         </form>
       </div>
