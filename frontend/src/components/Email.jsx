@@ -106,9 +106,9 @@ export default function Email(props) {
     const name = fields.name;
 
     // Keep only the properties we need
-    const tmpMatches = matches.map(({ home_team, away_team, selected }) => ({
-      home_team,
-      away_team,
+    const tmpMatches = matches.map(({ hteam, ateam, selected }) => ({
+      hteam,
+      ateam,
       selected,
     }));
 

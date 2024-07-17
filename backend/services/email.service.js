@@ -36,11 +36,11 @@ const sendEmailService = async (
   body += `  <h1>${name}'s Round ${roundNumber} Footy Tips</h1>\n`;
   body += "  <p>\n";
   tips.forEach(match => {
-    const { selected, home_team, away_team } = match;
+    const { selected, hteam, ateam } = match;
 
-    body += `    ${boldIf(selected === "home", home_team)} v ${boldIf(
+    body += `    ${boldIf(selected === "home", hteam)} v ${boldIf(
       selected === "away",
-      away_team
+      ateam
     )}<br>\n`;
   });
   body += "  </p>\n";
