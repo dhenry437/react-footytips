@@ -4,8 +4,8 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start-dev": "set NODE_ENV=development&& nodemon index.js",
-    "start-prod": "set NODE_ENV=production&& nodemon index.js"
+    "dev": "set NODE_ENV=development&& nodemon index.js",
+    "prod": "set NODE_ENV=production&& nodemon index.js"
   },
   "dependencies": {
     "axios": "^0.27.2",
@@ -20,6 +20,5 @@
     "pg-hstore": "^2.3.4",
     "request": "^2.88.2",
     "sequelize": "^6.20.1"
-  },
-  "packageManager": "yarn@1.22.21+sha1.1959a18351b811cdeedbd484a8f86c3cc3bbaf72"
+  }
 }
