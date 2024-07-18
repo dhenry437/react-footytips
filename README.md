@@ -18,8 +18,8 @@ Refresh the data in the DB from FanFooty resource
 
 ##### Example
 
-```
+```json
 {
-    "secret": "[PASSWORD]"
+  "secret": "[PASSWORD]"
 }
 ```

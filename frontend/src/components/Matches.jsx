@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, Fragment } from "react";
 import { toast } from "react-toastify";
 import { getMatches, getOdds } from "../data/repository";
-import * as dayjs from "dayjs";
+import dayjs from "dayjs";
 
 export default function Matches(props) {
   const {
@@ -191,7 +191,7 @@ export default function Matches(props) {
                             getBookmakersFromMatches(matches).length > 0 ? (
                               getBookmakersFromMatches(matches).map(
                                 (bookmaker, i) => (
-                                  <Fragment key={i}>
+                                  <div key={i}>
                                     <input
                                       type="radio"
                                       className="btn-check"
@@ -207,7 +207,7 @@ export default function Matches(props) {
                                       htmlFor={`odds${i}`}>
                                       {bookmaker}
                                     </label>
-                                  </Fragment>
+                                  </div>
                                 )
                               )
                             ) : (
@@ -240,7 +240,7 @@ export default function Matches(props) {
               const unixtimeDayjs = dayjs.unix(unixtime);
 
               return (
-                <>
+                <div key={i}>
                   <div
                     key={i}
                     className="d-flex align-items-center mb-1 mb-sm-2">
@@ -338,7 +338,7 @@ export default function Matches(props) {
                       {unixtimeDayjs.format("h:mm a")}
                     </span>
                   </div>
-                </>
+                </div>
               );
             })}
           </>

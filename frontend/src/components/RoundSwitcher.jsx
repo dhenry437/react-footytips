@@ -199,13 +199,11 @@ export default function RoundSwitcher(props) {
                   }))(rounds)
                 )
                   .flat()
-                  .map(round => {
-                    return (
-                      <option key={round} value={round}>
-                        {round}
-                      </option>
-                    );
-                  })}
+                  .map((round, i) => (
+                    <option key={i} value={round}>
+                      {round}
+                    </option>
+                  ))}
               </select>
             </div>
             <button
