@@ -42,6 +42,8 @@ const squiggleToOa = {
   Fremantle: "Fremantle Dockers",
 };
 
+const squiggleUserAgent = "footytipping.dhnode.com | dhenry437@gmail.com";
+
 // Return data from squiggle api as json for entry into db
 const getFixtureSquiggleApi = async (year, round) => {
   if (!year) year = dayjs().year();
@@ -50,7 +52,7 @@ const getFixtureSquiggleApi = async (year, round) => {
     .get(process.env.SQUIGGLEAPI_URL, {
       params: { q: "games", year: year, round: round },
       headers: {
-        "User-Agent": "footytipping.dhnode.com | dhenry437@gmail.com",
+        "User-Agent": squiggleUserAgent,
       },
     })
     .catch(function (error) {
@@ -204,9 +206,13 @@ const getMatchesFromDb = async (year, round) => {
 
 const getOddsFromApi = async (matches, year, round) => {
   const odds = await axios
-    .get(
-      `https://api.the-odds-api.com/v4/sports/aussierules_afl/odds/?apiKey=${process.env.ODDS_API_KEY}&regions=au&markets=h2h`
-    )
+    .get("https://api.the-odds-api.com/v4/sports/aussierules_afl/odds/", {
+      params: {
+        apiKey: process.env.ODDS_API_KEY,
+        regions: "au",
+        markets: "h2h",
+      },
+    })
     .catch(function (error) {
       return error.response;
     });
