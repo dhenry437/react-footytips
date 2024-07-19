@@ -160,7 +160,7 @@ const getMatchesFromDb = async (year, round) => {
   if (!isNaN(round)) {
     matches = await Match.findAll({
       where: { year: year, round: round, is_final: isFinalDictInverse["HA"] },
-      order: [["id", "ASC"]],
+      order: [["unixtime", "ASC"]],
     });
   } else if (
     round.toString().includes("QF") &&
