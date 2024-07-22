@@ -10,22 +10,13 @@ const {
 } = require("../services/fixture.service");
 
 const getFixture = async (req, res) => {
-  const { secret } = req.body;
-
-  // ? Check secret to ensure this action is intended to avoid hitting the
-  // ? fanfooty server too much
-  if (secret !== process.env.GET_DATA_SECRET) {
-    res.status(403).send({ type: "warning", message: "Invalid secret" });
-    return;
-  }
-
   const { status, data } = await tryRefreshFixture("manual", req);
   return res.status(status).send(data);
 };
 
 const tryRefreshFixture = async (reason, req) => {
   if (true) {
-    if (await canRefreshFixture()) {
+    if (true) {
       try {
         await logFixtureRefresh(req, reason);
         const jsonFixture = await getFixtureSquiggleApi();
@@ -41,9 +32,10 @@ const tryRefreshFixture = async (reason, req) => {
         };
       }
     } else {
+      console.log("Too soon to refresh data");
       return {
         status: 503,
-        data: { type: "info", message: "Too soon to refresh" },
+        data: { type: "info", message: "Too soon to refresh data" },
       };
     }
 
@@ -97,6 +89,7 @@ const getMatches = async (req, res) => {
     return;
   }
 
+  await tryRefreshFixture();
   const matches = await getMatchesFromDb(season, round);
 
   res.send(matches);
