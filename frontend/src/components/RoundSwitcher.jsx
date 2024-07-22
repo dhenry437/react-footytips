@@ -1,6 +1,7 @@
 import React, { useEffect, useCallback, useState } from "react";
-import { getRounds, getSeasons } from "../data/repository";
+import refreshData, { getRounds, getSeasons } from "../data/repository";
 import RoundSwitcherPagination from "./RoundSwitcherPagination";
+import { toast } from "react-toastify";
 
 export default function RoundSwitcher(props) {
   const {
@@ -33,24 +34,24 @@ export default function RoundSwitcher(props) {
 
   const fetchRoundsCallback = useCallback(
     async season => {
-      const response = await getRounds(season);
-      if (response.status !== 200) {
+      const getRoundsResponse = await getRounds(season);
+      if (getRoundsResponse.status !== 200) {
         setLoading(loading => ({ ...loading, rounds: false }));
         setError(error => ({
           ...error,
-          rounds: response.data || {
+          rounds: getRoundsResponse.data || {
             type: "danger",
             message: "Error fetching rounds",
           },
         }));
         return;
       }
-      const { homeAway, finals, currentRound } = response.data;
+      const { homeAway, finals, currentRound } = getRoundsResponse.data;
 
       // currentRound must be a string
       // res.json is automatically casting it as an int
       setRounds({
-        ...response.data,
+        ...getRoundsResponse.data,
         currentRound: currentRound?.toString(),
       });
       setLoading(loading => {

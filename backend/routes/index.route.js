@@ -9,11 +9,9 @@ const {
   getOdds,
 } = require("../controllers/fixture.controller");
 
-const {
-  sendEmail
-} = require("../controllers/email.controller");
+const { sendEmail } = require("../controllers/email.controller");
 
-router.post("/refresh-data", getFixture);
+router.get("/refresh-data", getFixture);
 
 // Get all seasons (years)
 router.get("/seasons", getSeasons);

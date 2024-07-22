@@ -6,24 +6,20 @@ import "react-toastify/dist/ReactToastify.min.css";
 
 export default function Navbar() {
   const handleClickRefreshData = async () => {
-    const secret = window.prompt("Password:");
+    const t = toast.loading("Please wait...");
 
-    if (secret || secret === "") {
-      const t = toast.loading("Please wait...");
+    const response = await refreshData();
+    const {
+      data: { type, message },
+    } = response;
 
-      const response = await refreshData(secret);
-      const {
-        data: { type, message },
-      } = response;
-
-      toast.update(t, {
-        render: message,
-        type,
-        isLoading: false,
-        autoClose: 3000,
-        closeOnClick: true,
-      });
-    }
+    toast.update(t, {
+      render: message,
+      type,
+      isLoading: false,
+      autoClose: 3000,
+      closeOnClick: true,
+    });
   };
 
   return (
