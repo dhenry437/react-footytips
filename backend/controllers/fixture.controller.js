@@ -15,35 +15,33 @@ const getFixture = async (req, res) => {
 };
 
 const tryRefreshFixture = async (reason, req) => {
-  if (true) {
-    if (true) {
-      try {
-        await logFixtureRefresh(req, reason);
-        const jsonFixture = await getFixtureSquiggleApi();
-        await insertJsonIntoDb(jsonFixture);
-      } catch (e) {
-        console.log(e);
-        return {
-          status: 500,
-          data: {
-            type: "error",
-            message: "An error occurred, check node logs",
-          },
-        };
-      }
-    } else {
-      console.log("Too soon to refresh data");
+  if (await canRefreshFixture()) {
+    try {
+      await logFixtureRefresh(req, reason);
+      const jsonFixture = await getFixtureSquiggleApi();
+      await insertJsonIntoDb(jsonFixture);
+    } catch (e) {
+      console.log(e);
       return {
-        status: 503,
-        data: { type: "info", message: "Too soon to refresh data" },
+        status: 500,
+        data: {
+          type: "error",
+          message: "An error occurred, check node logs",
+        },
       };
     }
-
+  } else {
+    console.log("Too soon to refresh data");
     return {
-      status: 200,
-      data: { type: "success", message: "Database refreshed successfully" },
+      status: 503,
+      data: { type: "info", message: "Too soon to refresh data" },
     };
   }
+
+  return {
+    status: 200,
+    data: { type: "success", message: "Database refreshed successfully" },
+  };
 };
 
 const getSeasons = async (req, res) => {
