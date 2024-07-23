@@ -10,15 +10,15 @@ const {
 } = require("../services/fixture.service");
 
 const getFixture = async (req, res) => {
-  const { status, data } = await tryRefreshFixture("manual", req);
+  const { status, data } = await tryRefreshFixture(req, "manual");
   return res.status(status).send(data);
 };
 
-const tryRefreshFixture = async (reason, req) => {
+const tryRefreshFixture = async (req, reason, year, round) => {
   if (await canRefreshFixture()) {
     try {
       await logFixtureRefresh(req, reason);
-      const jsonFixture = await getFixtureSquiggleApi();
+      const jsonFixture = await getFixtureSquiggleApi(year, round);
       await insertJsonIntoDb(jsonFixture);
     } catch (e) {
       console.log(e);
@@ -45,7 +45,7 @@ const tryRefreshFixture = async (reason, req) => {
 };
 
 const getSeasons = async (req, res) => {
-  await tryRefreshFixture("page load", req);
+  // await tryRefreshFixture(req, "page load");
 
   const seasons = await getSeasonsFromDb();
 
@@ -70,10 +70,6 @@ const getRounds = async (req, res) => {
     res.status(500).send({ type: "danger", message: "Error fetching rounds" });
     return;
   }
-  const { fixtureRequiresRefresh } = rounds;
-
-  // ? If a match is 3 hours in the past but with no scores,
-  // ? should indicate a db refresh is needed
 
   res.send(rounds);
 };
@@ -87,7 +83,6 @@ const getMatches = async (req, res) => {
     return;
   }
 
-  await tryRefreshFixture();
   const matches = await getMatchesFromDb(season, round);
 
   res.send(matches);
