@@ -85,6 +85,10 @@ const insertJsonIntoDb = async json => {
     });
     // Insert new records
     await Match.bulkCreate(json);
+  } else {
+    console.log(
+      "ERROR: insertJsonIntoDb() - data.games was null from Squiggle"
+    );
   }
 };
 
