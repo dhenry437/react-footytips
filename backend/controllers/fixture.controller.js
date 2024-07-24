@@ -15,6 +15,7 @@ const getFixture = async (req, res) => {
 };
 
 const tryRefreshFixture = async (req, reason, year, round) => {
+  // console.log("--\ntryRefreshFixture()\n--");
   if (await canRefreshFixture()) {
     try {
       await logFixtureRefresh(req, reason);
@@ -58,14 +59,14 @@ const getSeasons = async (req, res) => {
 };
 
 const getRounds = async (req, res) => {
-  const season = parseInt(req.query?.season);
+  const year = parseInt(req.query?.year);
 
-  if (!Number.isInteger(season)) {
-    res.status(400).send('Invalid value for query parameter "season"');
+  if (!Number.isInteger(year)) {
+    res.status(400).send('Invalid value for query parameter "year"');
     return;
   }
 
-  const rounds = await getRoundsFromDb(season);
+  const rounds = await getRoundsFromDb(year);
   if (!rounds) {
     res.status(500).send({ type: "danger", message: "Error fetching rounds" });
     return;
@@ -75,30 +76,31 @@ const getRounds = async (req, res) => {
 };
 
 const getMatches = async (req, res) => {
-  const season = parseInt(req.query?.season);
+  const year = parseInt(req.query?.year);
   const round = req.query?.round;
 
-  if (!Number.isInteger(season)) {
-    res.status(400).send('Invalid value for query parameter "season"');
+  if (!Number.isInteger(year)) {
+    res.status(400).send('Invalid value for query parameter "year"');
     return;
   }
 
-  const matches = await getMatchesFromDb(season, round);
+  await tryRefreshFixture(req, `get round ${round} ${year}`, year, round);
+  const matches = await getMatchesFromDb(year, round);
 
   res.send(matches);
 };
 
 const getOdds = async (req, res) => {
-  const season = parseInt(req.body?.season);
+  const year = parseInt(req.body?.year);
   const round = req.body?.round;
   const matches = req.body?.matches;
 
-  if (!Number.isInteger(season)) {
-    res.status(400).send('Invalid value for body parameter "season"');
+  if (!Number.isInteger(year)) {
+    res.status(400).send('Invalid value for body parameter "year"');
     return;
   }
 
-  const rounds = await getOddsFromApi(matches, season, round);
+  const rounds = await getOddsFromApi(matches, year, round);
 
   res.send(rounds);
 };

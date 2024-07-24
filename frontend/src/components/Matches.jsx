@@ -17,12 +17,12 @@ export default function Matches(props) {
   const [error, setError] = useState({ matches: null, odds: null });
 
   const fetchMatchesCallback = useCallback(
-    async (season, round) => {
+    async (year, round) => {
       setLoading(loading => {
         return { ...loading, matches: true };
       });
 
-      const response = await getMatches(season, round);
+      const response = await getMatches(year, round);
       if (response.status !== 200) {
         setLoading(loading => ({ ...loading, matches: false }));
         setError(error => ({
@@ -44,12 +44,12 @@ export default function Matches(props) {
   );
 
   const fetchOddsCallback = useCallback(
-    async (matches, season, round) => {
+    async (matches, year, round) => {
       setLoading(loading => {
         return { ...loading, odds: true };
       });
       setSelectedOdds(null);
-      const response = await getOdds(matches, season, round);
+      const response = await getOdds(matches, year, round);
 
       setMatches(response.data);
       setLoading({ matches: false, odds: false });

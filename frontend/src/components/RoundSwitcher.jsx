@@ -33,8 +33,8 @@ export default function RoundSwitcher(props) {
   }, []);
 
   const fetchRoundsCallback = useCallback(
-    async season => {
-      const getRoundsResponse = await getRounds(season);
+    async year => {
+      const getRoundsResponse = await getRounds(year);
       if (getRoundsResponse.status !== 200) {
         setLoading(loading => ({ ...loading, rounds: false }));
         setError(error => ({
@@ -81,8 +81,8 @@ export default function RoundSwitcher(props) {
     setSelectedRound(round);
   };
 
-  const handleChangeSeason = season => {
-    setSelectedSeason(season);
+  const handleChangeSeason = year => {
+    setSelectedSeason(year);
   };
 
   const handleClickNavigation = direction => {
@@ -137,13 +137,13 @@ export default function RoundSwitcher(props) {
             </div>
           ) : (
             <select
-              name="season"
+              name="year"
               value={selectedSeason}
               onChange={event => handleChangeSeason(event.target.value)}
               className="form-select form-select-sm">
-              {seasons?.map(season => (
-                <option key={season} value={season}>
-                  {season}
+              {seasons?.map(year => (
+                <option key={year} value={year}>
+                  {year}
                 </option>
               ))}
             </select>

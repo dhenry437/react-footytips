@@ -16,11 +16,11 @@ export async function getSeasons() {
   return response;
 }
 
-export async function getRounds(season) {
+export async function getRounds(year) {
   let config = {};
-  if (season) {
+  if (year) {
     config.params = {
-      season: season,
+      year: year,
     };
   }
 
@@ -31,11 +31,11 @@ export async function getRounds(season) {
   return response;
 }
 
-export async function getMatches(season, round) {
+export async function getMatches(year, round) {
   let config = {};
-  if (season && round) {
+  if (year && round) {
     config.params = {
-      season: season,
+      year: year,
       round: round,
     };
   }
@@ -73,10 +73,10 @@ export async function sendEmail(
   return response;
 }
 
-export async function getOdds(matches, season, round) {
+export async function getOdds(matches, year, round) {
   const bodyParameters = {
     matches: matches,
-    season: season,
+    year: year,
     round: round,
   };
 

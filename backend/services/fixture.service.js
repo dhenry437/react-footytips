@@ -63,9 +63,29 @@ const getFixtureSquiggleApi = async (year, round) => {
 };
 
 const insertJsonIntoDb = async json => {
-  await Match.bulkCreate(json, {
-    updateOnDuplicate: ["year", "hteam", "ateam", "round"],
-  }); // { updateOnDuplicate: ["id"] } // ! Depending which approach is right this could cause problems
+  // const matchColumns = Object.keys(Match.rawAttributes);
+
+  // await Match.bulkCreate(json, {
+  //   // ? List of fields to update when there is a duplicate PK
+  //   updateOnDuplicate: matchColumns,
+  // });
+
+  // ? JSON will be null if data.games was null from Squiggle
+  if (json) {
+    // Destroy matching records
+    const years = [...new Set(json.map(x => x.year))];
+    console.log(`years = ${years}`);
+    const rounds = [...new Set(json.map(x => x.round))];
+    console.log(`rounds = ${rounds}`);
+    await Match.destroy({
+      where: {
+        year: years,
+        round: rounds,
+      },
+    });
+    // Insert new records
+    await Match.bulkCreate(json);
+  }
 };
 
 const logFixtureRefresh = async (req, reason) => {
@@ -99,14 +119,14 @@ const getSeasonsFromDb = async () => {
   return seasons.map(x => x.year);
 };
 
-const getRoundsFromDb = async season => {
-  // Select distinct values for column season
+const getRoundsFromDb = async year => {
+  // Select distinct values for column year
   let matches = await Match.findAll({
     attributes: [
       [Sequelize.fn("DISTINCT", Sequelize.col("round")), "round"],
       "is_final",
     ],
-    where: { year: season },
+    where: { year: year },
     order: [["round", "ASC"]],
   });
 
@@ -124,10 +144,10 @@ const getRoundsFromDb = async season => {
   }
 
   let currentRound = null;
-  if (season === new Date().getFullYear()) {
+  if (year === new Date().getFullYear()) {
     matches = await Match.findAll({
       attributes: ["unixtime", "hscore", "ascore", "round", "is_final"],
-      where: { year: season },
+      where: { year: year },
       order: [["id", "ASC"]],
     });
 
@@ -157,6 +177,7 @@ const getRoundsFromDb = async season => {
 };
 
 const getMatchesFromDb = async (year, round) => {
+  // console.log("--\ngetMatchesFromDb()\n--");
   let matches = null;
 
   if (!isNaN(round)) {

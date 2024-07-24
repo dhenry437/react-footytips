@@ -16,15 +16,15 @@ router.get("/refresh-data", getFixture);
 // Get all seasons (years)
 router.get("/seasons", getSeasons);
 
-//GET /api/rounds?season=[YEAR]
+//GET /api/rounds?year=[YEAR]
 router.get("/rounds", getRounds);
 
 router.get("/current-round");
 
-// GET /api/matches?season=[YEAR]&round=[ROUND]
+// GET /api/matches?year=[YEAR]&round=[ROUND]
 router.get("/matches", getMatches);
 
-// GET /api/odds?season=[YEAR]&round=[ROUND]
+// GET /api/odds?year=[YEAR]&round=[ROUND]
 router.post("/odds", getOdds);
 
 router.post("/send-email", sendEmail);
