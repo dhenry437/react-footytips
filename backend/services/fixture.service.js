@@ -63,9 +63,12 @@ const getFixtureSquiggleApi = async (year, round) => {
 };
 
 const insertJsonIntoDb = async json => {
+  const matchColumns = Object.keys(Match.rawAttributes);
+
   await Match.bulkCreate(json, {
-    updateOnDuplicate: ["year", "hteam", "ateam", "round"],
-  }); // { updateOnDuplicate: ["id"] } // ! Depending which approach is right this could cause problems
+    // ? List of fields to update when there is a duplicate PK
+    updateOnDuplicate: matchColumns,
+  });
 };
 
 const logFixtureRefresh = async (req, reason) => {
@@ -99,14 +102,14 @@ const getSeasonsFromDb = async () => {
   return seasons.map(x => x.year);
 };
 
-const getRoundsFromDb = async season => {
-  // Select distinct values for column season
+const getRoundsFromDb = async year => {
+  // Select distinct values for column year
   let matches = await Match.findAll({
     attributes: [
       [Sequelize.fn("DISTINCT", Sequelize.col("round")), "round"],
       "is_final",
     ],
-    where: { year: season },
+    where: { year: year },
     order: [["round", "ASC"]],
   });
 
@@ -124,10 +127,10 @@ const getRoundsFromDb = async season => {
   }
 
   let currentRound = null;
-  if (season === new Date().getFullYear()) {
+  if (year === new Date().getFullYear()) {
     matches = await Match.findAll({
       attributes: ["unixtime", "hscore", "ascore", "round", "is_final"],
-      where: { year: season },
+      where: { year: year },
       order: [["id", "ASC"]],
     });
 
@@ -157,6 +160,7 @@ const getRoundsFromDb = async season => {
 };
 
 const getMatchesFromDb = async (year, round) => {
+  // console.log("--\ngetMatchesFromDb()\n--");
   let matches = null;
 
   if (!isNaN(round)) {
