@@ -63,12 +63,29 @@ const getFixtureSquiggleApi = async (year, round) => {
 };
 
 const insertJsonIntoDb = async json => {
-  const matchColumns = Object.keys(Match.rawAttributes);
+  // const matchColumns = Object.keys(Match.rawAttributes);
 
-  await Match.bulkCreate(json, {
-    // ? List of fields to update when there is a duplicate PK
-    updateOnDuplicate: matchColumns,
-  });
+  // await Match.bulkCreate(json, {
+  //   // ? List of fields to update when there is a duplicate PK
+  //   updateOnDuplicate: matchColumns,
+  // });
+
+  // ? JSON will be null if data.games was null from Squiggle
+  if (json) {
+    // Destroy matching records
+    const years = [...new Set(json.map(x => x.year))];
+    console.log(`years = ${years}`);
+    const rounds = [...new Set(json.map(x => x.round))];
+    console.log(`rounds = ${rounds}`);
+    await Match.destroy({
+      where: {
+        year: years,
+        round: rounds,
+      },
+    });
+    // Insert new records
+    await Match.bulkCreate(json);
+  }
 };
 
 const logFixtureRefresh = async (req, reason) => {
