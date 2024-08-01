@@ -106,9 +106,11 @@ const canRefreshFixture = async () => {
     order: [["updatedAt", "DESC"]],
   });
 
-  return lastLog
-    ? dayjs().isAfter(dayjs(lastLog.updatedAt).add(10, "minute"))
-    : true;
+  // TODO Work out how to limit requests
+  // return lastLog
+  //   ? dayjs().isAfter(dayjs(lastLog.updatedAt).add(10, "minute"))
+  //   : true;
+  return true;
 };
 
 const getSeasonsFromDb = async () => {
