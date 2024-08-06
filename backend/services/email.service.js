@@ -78,7 +78,7 @@ const sendEmailService = async (
   const bodyParameters = {
     sender: {
       name: "Footy Tipping v3",
-      email: "no-reply@footytipping.app",
+      email: "no-reply@dhnode.com",
     },
     to: to,
     cc: cc,
