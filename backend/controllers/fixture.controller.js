@@ -15,7 +15,7 @@ const getFixture = async (req, res) => {
 };
 
 const tryRefreshFixture = async (req, reason, year, round) => {
-  // console.log("--\ntryRefreshFixture()\n--");
+  console.log("--\ntryRefreshFixture()\n--");
   if (await canRefreshFixture()) {
     try {
       await logFixtureRefresh(req, reason);
