@@ -154,7 +154,7 @@ const getRoundsFromDb = async year => {
     matches = await Match.findAll({
       attributes: ["unixtime", "hscore", "ascore", "round", "is_final"],
       where: { year: year },
-      order: [["id", "ASC"]],
+      order: [["date", "ASC"]],
     });
 
     const nextMatch = matches.find(
