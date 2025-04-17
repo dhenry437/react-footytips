@@ -1,9 +1,5 @@
 const { sendEmailService } = require("../services/email.service");
-
-const sendInBlueResponseDict = {
-  "email is not valid in to": 'One or more "To" addresses are malformed',
-  "email is not valid in cc": 'One or more "CC" addresses are malformed',
-};
+const { sendInBlueResponseDict } = require("../dict");
 
 const sendEmail = async (req, res) => {
   const { tips, roundNumber, name, toEmails, ccEmails, reCaptchaValue } =
