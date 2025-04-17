@@ -2,45 +2,17 @@ const axios = require("axios");
 const csv = require("csvtojson");
 const dayjs = require("dayjs");
 
+const {
+  isFinalDict,
+  isFinalDictInverse,
+  squiggleToOddsApiDict,
+} = require("../dict");
+
 const db = require("../db");
 const Sequelize = db.Sequelize;
 const Match = db.matches;
 const UpdateLog = db.updateLog;
 const Op = Sequelize.Op;
-
-const isFinalDict = {
-  0: "HA",
-  1: "UN",
-  2: "EF",
-  3: "QF",
-  4: "SF",
-  5: "PF",
-  6: "GF",
-};
-const isFinalDictInverse = Object.fromEntries(
-  Object.entries(isFinalDict).map(a => a.reverse())
-);
-
-const squiggleToOa = {
-  "Western Bulldogs": "Western Bulldogs",
-  "Brisbane Lions": "Brisbane Lions",
-  "St Kilda": "St Kilda Saints",
-  Carlton: "Carlton Blues",
-  Sydney: "Sydney Swans",
-  Essendon: "Essendon Bombers",
-  Melbourne: "Melbourne Demons",
-  Adelaide: "Adelaide Crows",
-  "North Melbourne": "North Melbourne Kangaroos",
-  Geelong: "Geelong Cats",
-  Collingwood: "Collingwood Magpies",
-  "Gold Coast": "Gold Coast Suns",
-  "West Coast": "West Coast Eagles",
-  Richmond: "Richmond Tigers",
-  Hawthorn: "Hawthorn Hawks",
-  "Greater Western Sydney": "Greater Western Sydney Giants",
-  "Port Adelaide": "Port Adelaide Power",
-  Fremantle: "Fremantle Dockers",
-};
 
 const squiggleUserAgent = "footytipping.dhnode.com | dhenry437@gmail.com";
 
@@ -249,8 +221,8 @@ const getOddsFromApi = async (matches, year, round) => {
     matchesAndOdds[i].odds = {};
     odds.data.forEach(odd => {
       if (
-        odd.home_team === squiggleToOa[match.hteam] &&
-        odd.away_team === squiggleToOa[match.ateam]
+        odd.home_team === squiggleToOddsApiDict[match.hteam] &&
+        odd.away_team === squiggleToOddsApiDict[match.ateam]
       ) {
         odd.bookmakers.forEach(bookmaker => {
           matchesAndOdds[i].odds[bookmaker.title] = {};
