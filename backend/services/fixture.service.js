@@ -236,6 +236,25 @@ const getOddsFromApi = async (matches, year, round) => {
         });
       }
     });
+
+    const bookmakerOdds = Object.values(matchesAndOdds[i].odds);
+    const bookmakerCount = bookmakerOdds.length;
+
+    if (bookmakerCount > 0) {
+      const sumHome = bookmakerOdds.reduce(
+        (total, current) => total + current.home,
+        0
+      );
+      const sumAway = bookmakerOdds.reduce(
+        (total, current) => total + current.away,
+        0
+      );
+
+      matchesAndOdds[i].odds.avg = {
+        home: parseFloat((sumHome / bookmakerCount).toFixed(2)),
+        away: parseFloat((sumAway / bookmakerCount).toFixed(2)),
+      };
+    }
   });
 
   return matchesAndOdds;

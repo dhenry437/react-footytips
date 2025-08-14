@@ -50,7 +50,7 @@ export default function Matches(props) {
         return { ...loading, odds: true };
       });
       setSelectedOdds(null);
-      const response = await getOdds(matches, year, round);
+      let response = await getOdds(matches, year, round);
 
       setMatches(response.data);
       setLoading({ matches: false, odds: false });
@@ -190,27 +190,45 @@ export default function Matches(props) {
                         {matches &&
                           (matches.some(x => !!x.odds) ? (
                             getBookmakersFromMatches(matches).length > 0 ? (
-                              getBookmakersFromMatches(matches).map(
-                                (bookmaker, i) => (
-                                  <div key={i}>
-                                    <input
-                                      type="radio"
-                                      className="btn-check"
-                                      name="odds"
-                                      id={`odds${i}`}
-                                      checked={selectedOdds === bookmaker}
-                                      onChange={() =>
-                                        handleChangeOdds(bookmaker)
-                                      }
-                                    />
-                                    <label
-                                      className="btn btn-primary btn-sm my-1 me-1"
-                                      htmlFor={`odds${i}`}>
-                                      {bookmaker}
-                                    </label>
-                                  </div>
-                                )
-                              )
+                              <>
+                                <div key="avg">
+                                  <input
+                                    type="radio"
+                                    className="btn-check"
+                                    name="odds"
+                                    id="oddsAvg"
+                                    checked={selectedOdds === "avg"}
+                                    onChange={() => handleChangeOdds("avg")}
+                                  />
+                                  <label
+                                    className="btn btn-info btn-sm my-1 me-1"
+                                    htmlFor="oddsAvg">
+                                    Average
+                                  </label>
+                                </div>
+                                {getBookmakersFromMatches(matches).map(
+                                  (bookmaker, i) =>
+                                    bookmaker !== "avg" && (
+                                      <div key={i}>
+                                        <input
+                                          type="radio"
+                                          className="btn-check"
+                                          name="odds"
+                                          id={`odds${i}`}
+                                          checked={selectedOdds === bookmaker}
+                                          onChange={() =>
+                                            handleChangeOdds(bookmaker)
+                                          }
+                                        />
+                                        <label
+                                          className="btn btn-primary btn-sm my-1 me-1"
+                                          htmlFor={`odds${i}`}>
+                                          {bookmaker}
+                                        </label>
+                                      </div>
+                                    )
+                                )}
+                              </>
                             ) : (
                               <div className="alert alert-info mb-0 flex-grow-1 text-center p-2">
                                 There are no bookmakers available for this round
