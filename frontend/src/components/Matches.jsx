@@ -1,5 +1,6 @@
-import React, { useState, useCallback, useEffect, Fragment } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { toast } from "react-toastify";
+import PropTypes from "prop-types";
 import { getMatches, getOdds } from "../data/repository";
 import dayjs from "dayjs";
 
@@ -372,3 +373,13 @@ export default function Matches(props) {
     </div>
   );
 }
+
+// Props validation
+Matches.propTypes = {
+  matches: PropTypes.array,
+  setMatches: PropTypes.func.isRequired,
+  selectedSeason: PropTypes.number,
+  selectedRound: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  selectedOdds: PropTypes.string,
+  setSelectedOdds: PropTypes.func.isRequired,
+};

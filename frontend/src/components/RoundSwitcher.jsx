@@ -1,7 +1,7 @@
-import React, { useEffect, useCallback, useState } from "react";
-import refreshData, { getRounds, getSeasons } from "../data/repository";
+import { useEffect, useCallback, useState } from "react";
+import PropTypes from "prop-types";
+import { getRounds, getSeasons } from "../data/repository";
 import RoundSwitcherPagination from "./RoundSwitcherPagination";
-import { toast } from "react-toastify";
 
 export default function RoundSwitcher(props) {
   const {
@@ -221,3 +221,11 @@ export default function RoundSwitcher(props) {
     </div>
   );
 }
+
+RoundSwitcher.propTypes = {
+  selectedSeason: PropTypes.number,
+  setSelectedSeason: PropTypes.func.isRequired,
+  selectedRound: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  setSelectedRound: PropTypes.func.isRequired,
+  setCurrentRound: PropTypes.func.isRequired,
+};
