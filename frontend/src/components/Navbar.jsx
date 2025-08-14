@@ -1,4 +1,3 @@
-import React from "react";
 import refreshData from "../data/repository";
 import logo from "../assets/logo192.png";
 import { toast } from "react-toastify";

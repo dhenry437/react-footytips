@@ -1,5 +1,6 @@
-import React, { useState, useCallback, useEffect, Fragment } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { toast } from "react-toastify";
+import PropTypes from "prop-types";
 import { getMatches, getOdds } from "../data/repository";
 import dayjs from "dayjs";
 
@@ -15,6 +16,14 @@ export default function Matches(props) {
 
   const [loading, setLoading] = useState({ matches: true, odds: false });
   const [error, setError] = useState({ matches: null, odds: null });
+  const [selectedOddsFunction, setSelectedOddsFunction] = useState("avg");
+
+  const oddsFunctions = {
+    avg: { text: "Average", id: "oddsAvg" },
+    med: { text: "Median", id: "oddsMed" },
+    min: { text: "Min", id: "oddsMin" },
+    max: { text: "Max", id: "oddsMax" },
+  };
 
   const fetchMatchesCallback = useCallback(
     async (year, round) => {
@@ -49,7 +58,7 @@ export default function Matches(props) {
         return { ...loading, odds: true };
       });
       setSelectedOdds(null);
-      const response = await getOdds(matches, year, round);
+      let response = await getOdds(matches, year, round);
 
       setMatches(response.data);
       setLoading({ matches: false, odds: false });
@@ -189,27 +198,83 @@ export default function Matches(props) {
                         {matches &&
                           (matches.some(x => !!x.odds) ? (
                             getBookmakersFromMatches(matches).length > 0 ? (
-                              getBookmakersFromMatches(matches).map(
-                                (bookmaker, i) => (
-                                  <div key={i}>
-                                    <input
-                                      type="radio"
-                                      className="btn-check"
-                                      name="odds"
-                                      id={`odds${i}`}
-                                      checked={selectedOdds === bookmaker}
-                                      onChange={() =>
-                                        handleChangeOdds(bookmaker)
-                                      }
-                                    />
-                                    <label
-                                      className="btn btn-primary btn-sm my-1 me-1"
-                                      htmlFor={`odds${i}`}>
-                                      {bookmaker}
-                                    </label>
-                                  </div>
-                                )
-                              )
+                              <>
+                                <div
+                                  className="btn-group btn-group-sm my-1 me-1"
+                                  role="group">
+                                  <input
+                                    type="radio"
+                                    className="btn-check"
+                                    name="odds"
+                                    id={oddsFunctions[selectedOddsFunction].id}
+                                    checked={
+                                      selectedOdds === selectedOddsFunction
+                                    }
+                                    onChange={() =>
+                                      handleChangeOdds(selectedOddsFunction)
+                                    }
+                                  />
+                                  <label
+                                    className="btn btn-secondary"
+                                    htmlFor={
+                                      oddsFunctions[selectedOddsFunction].id
+                                    }>
+                                    {oddsFunctions[selectedOddsFunction].text}
+                                  </label>
+                                  <button
+                                    type="button"
+                                    className="btn btn-secondary dropdown-toggle dropdown-toggle-split"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    <span className="visually-hidden">
+                                      Toggle Dropdown
+                                    </span>
+                                  </button>
+                                  <ul className="dropdown-menu">
+                                    {Object.entries(oddsFunctions).map(
+                                      ([key, value]) =>
+                                        key != selectedOddsFunction && (
+                                          <li key={value.id}>
+                                            <a
+                                              className="dropdown-item"
+                                              href="#"
+                                              onClick={e => {
+                                                e.preventDefault();
+                                                setSelectedOddsFunction(key);
+                                                handleChangeOdds(key);
+                                              }}>
+                                              {value.text}
+                                            </a>
+                                          </li>
+                                        )
+                                    )}
+                                  </ul>
+                                </div>
+                                {getBookmakersFromMatches(matches).map(
+                                  (bookmaker, i) =>
+                                    !["avg", "min", "max", "med"].includes(
+                                      bookmaker
+                                    ) && (
+                                      <div key={i}>
+                                        <input
+                                          type="radio"
+                                          className="btn-check"
+                                          name="odds"
+                                          id={`odds${i}`}
+                                          checked={selectedOdds === bookmaker}
+                                          onChange={() =>
+                                            handleChangeOdds(bookmaker)
+                                          }
+                                        />
+                                        <label
+                                          className="btn btn-primary btn-sm my-1 me-1"
+                                          htmlFor={`odds${i}`}>
+                                          {bookmaker}
+                                        </label>
+                                      </div>
+                                    )
+                                )}
+                              </>
                             ) : (
                               <div className="alert alert-info mb-0 flex-grow-1 text-center p-2">
                                 There are no bookmakers available for this round
@@ -372,3 +437,13 @@ export default function Matches(props) {
     </div>
   );
 }
+
+// Props validation
+Matches.propTypes = {
+  matches: PropTypes.array,
+  setMatches: PropTypes.func.isRequired,
+  selectedSeason: PropTypes.number,
+  selectedRound: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  selectedOdds: PropTypes.string,
+  setSelectedOdds: PropTypes.func.isRequired,
+};

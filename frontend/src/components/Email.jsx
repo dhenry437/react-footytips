@@ -1,4 +1,4 @@
-import React, { createRef, useEffect, useState } from "react";
+import { createRef, useEffect, useState } from "react";
 import {
   getEmailFieldsLocalStorage,
   sendEmail,
@@ -6,6 +6,7 @@ import {
 } from "../data/repository";
 import { toast } from "react-toastify";
 import ReCAPTCHA from "react-google-recaptcha";
+import PropTypes from "prop-types";
 import { z } from "zod";
 
 export default function Email(props) {
@@ -326,3 +327,9 @@ export default function Email(props) {
     </div>
   );
 }
+
+// Props validation
+Email.propTypes = {
+  matches: PropTypes.array,
+  selectedRound: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+};

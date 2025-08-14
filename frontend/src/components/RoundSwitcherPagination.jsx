@@ -1,4 +1,4 @@
-import React from "react";
+import PropTypes from "prop-types";
 
 export default function RoundSwitcherPagination(props) {
   const { rounds, selectedRound, handleClickRound, handleClickNavigation } =
@@ -44,3 +44,10 @@ export default function RoundSwitcherPagination(props) {
     </>
   );
 }
+
+RoundSwitcherPagination.propTypes = {
+  rounds: PropTypes.array.isRequired,
+  selectedRound: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  handleClickRound: PropTypes.func.isRequired,
+  handleClickNavigation: PropTypes.func.isRequired,
+};

@@ -236,6 +236,52 @@ const getOddsFromApi = async (matches, year, round) => {
         });
       }
     });
+
+    const bookmakerOdds = Object.values(matchesAndOdds[i].odds);
+    const bookmakerCount = bookmakerOdds.length;
+
+    if (bookmakerCount > 0) {
+      const homeOdds = bookmakerOdds.map(o => o.home);
+      const awayOdds = bookmakerOdds.map(o => o.away);
+
+      // --- Mean (Average) ---
+      const sumHome = homeOdds.reduce((total, current) => total + current, 0);
+      const sumAway = awayOdds.reduce((total, current) => total + current, 0);
+      matchesAndOdds[i].odds.avg = {
+        home: parseFloat((sumHome / bookmakerCount).toFixed(2)),
+        away: parseFloat((sumAway / bookmakerCount).toFixed(2)),
+      };
+
+      // --- Min / Max ---
+      matchesAndOdds[i].odds.min = {
+        home: Math.min(...homeOdds),
+        away: Math.min(...awayOdds),
+      };
+      matchesAndOdds[i].odds.max = {
+        home: Math.max(...homeOdds),
+        away: Math.max(...awayOdds),
+      };
+
+      // --- Median ---
+      const sortedHome = [...homeOdds].sort((a, b) => a - b);
+      const midHome = Math.floor(sortedHome.length / 2);
+      const medianHome =
+        sortedHome.length % 2 !== 0
+          ? sortedHome[midHome]
+          : (sortedHome[midHome - 1] + sortedHome[midHome]) / 2;
+
+      const sortedAway = [...awayOdds].sort((a, b) => a - b);
+      const midAway = Math.floor(sortedAway.length / 2);
+      const medianAway =
+        sortedAway.length % 2 !== 0
+          ? sortedAway[midAway]
+          : (sortedAway[midAway - 1] + sortedAway[midAway]) / 2;
+
+      matchesAndOdds[i].odds.med = {
+        home: parseFloat(medianHome.toFixed(2)),
+        away: parseFloat(medianAway.toFixed(2)),
+      };
+    }
   });
 
   return matchesAndOdds;

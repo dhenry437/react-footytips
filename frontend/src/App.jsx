@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { ToastContainer } from "react-toastify";
 import "./App.css";
 import Email from "./components/Email";
