@@ -16,6 +16,14 @@ export default function Matches(props) {
 
   const [loading, setLoading] = useState({ matches: true, odds: false });
   const [error, setError] = useState({ matches: null, odds: null });
+  const [selectedOddsFunction, setSelectedOddsFunction] = useState("avg");
+
+  const oddsFunctions = {
+    avg: { text: "Average", id: "oddsAvg" },
+    med: { text: "Median", id: "oddsMed" },
+    min: { text: "Min", id: "oddsMin" },
+    max: { text: "Max", id: "oddsMax" },
+  };
 
   const fetchMatchesCallback = useCallback(
     async (year, round) => {
@@ -191,24 +199,62 @@ export default function Matches(props) {
                           (matches.some(x => !!x.odds) ? (
                             getBookmakersFromMatches(matches).length > 0 ? (
                               <>
-                                <div key="avg">
+                                <div
+                                  className="btn-group btn-group-sm my-1 me-1"
+                                  role="group">
                                   <input
                                     type="radio"
                                     className="btn-check"
                                     name="odds"
-                                    id="oddsAvg"
-                                    checked={selectedOdds === "avg"}
-                                    onChange={() => handleChangeOdds("avg")}
+                                    id={oddsFunctions[selectedOddsFunction].id}
+                                    checked={
+                                      selectedOdds === selectedOddsFunction
+                                    }
+                                    onChange={() =>
+                                      handleChangeOdds(selectedOddsFunction)
+                                    }
                                   />
                                   <label
-                                    className="btn btn-info btn-sm my-1 me-1"
-                                    htmlFor="oddsAvg">
-                                    Average
+                                    className="btn btn-secondary"
+                                    htmlFor={
+                                      oddsFunctions[selectedOddsFunction].id
+                                    }>
+                                    {oddsFunctions[selectedOddsFunction].text}
                                   </label>
+                                  <button
+                                    type="button"
+                                    className="btn btn-secondary dropdown-toggle dropdown-toggle-split"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    <span className="visually-hidden">
+                                      Toggle Dropdown
+                                    </span>
+                                  </button>
+                                  <ul className="dropdown-menu">
+                                    {Object.entries(oddsFunctions).map(
+                                      ([key, value]) =>
+                                        key != selectedOddsFunction && (
+                                          <li key={value.id}>
+                                            <a
+                                              className="dropdown-item"
+                                              href="#"
+                                              onClick={e => {
+                                                e.preventDefault();
+                                                setSelectedOddsFunction(key);
+                                                handleChangeOdds(key);
+                                              }}>
+                                              {value.text}
+                                            </a>
+                                          </li>
+                                        )
+                                    )}
+                                  </ul>
                                 </div>
                                 {getBookmakersFromMatches(matches).map(
                                   (bookmaker, i) =>
-                                    bookmaker !== "avg" && (
+                                    !["avg", "min", "max", "med"].includes(
+                                      bookmaker
+                                    ) && (
                                       <div key={i}>
                                         <input
                                           type="radio"
