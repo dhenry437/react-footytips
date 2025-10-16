@@ -129,10 +129,15 @@ const getRoundsFromDb = async year => {
       order: [["date", "ASC"]],
     });
 
-    const nextMatch = matches.find(
+    let nextMatch = matches.find(
       // Add 6 hours to gametime so that it is not instantly the next round
       x => dayjs.unix(x.unixtime).add(6, "hour").isAfter(dayjs())
     );
+
+    // If there is no next match use the last match
+    if (!nextMatch) {
+      nextMatch = matches[matches.length - 1];
+    }
 
     if (
       isFinalDict[nextMatch.is_final] == "QF" ||
