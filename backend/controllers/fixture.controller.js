@@ -8,7 +8,8 @@ const {
   getFixtureSquiggleApi,
   insertJsonIntoDb,
 } = require("../services/fixture.service");
-const { roundsToSquiggleDict } = require("../dict");
+const { roundsToSquiggleDict, isFinalDict } = require("../dict");
+const { flip } = require("../util");
 
 const getFixture = async (req, res) => {
   const { status, data } = await tryRefreshFixture(req, "manual");
@@ -22,7 +23,7 @@ const tryRefreshFixture = async (req, reason, year, round) => {
       await logFixtureRefresh(req, reason);
       const jsonFixture = await getFixtureSquiggleApi(
         year,
-        roundsToSquiggleDict[round]
+        Number.isFinite(round) ? round : flip(isFinalDict)[round],
       );
       await insertJsonIntoDb(jsonFixture);
     } catch (e) {

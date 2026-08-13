@@ -11,11 +11,8 @@ const isFinalDict = {
   4: "SF", // Semi-Final
   5: "PF", // Preliminary Final
   6: "GF", // Grand Final
+  7: "WF", // Wildcard Final
 };
-
-const isFinalDictInverse = Object.fromEntries(
-  Object.entries(isFinalDict).map(a => a.reverse())
-);
 
 const squiggleToOddsApiDict = {
   "Western Bulldogs": "Western Bulldogs",
@@ -38,42 +35,8 @@ const squiggleToOddsApiDict = {
   Fremantle: "Fremantle Dockers",
 };
 
-// ! Got no idea if this may change in the future
-const roundsToSquiggleDict = {
-  1: 1,
-  2: 2,
-  3: 3,
-  4: 4,
-  5: 5,
-  6: 6,
-  7: 7,
-  8: 8,
-  9: 9,
-  10: 10,
-  11: 11,
-  12: 12,
-  13: 13,
-  14: 14,
-  15: 15,
-  16: 16,
-  17: 17,
-  18: 18,
-  19: 19,
-  20: 20,
-  21: 21,
-  22: 22,
-  23: 23,
-  24: 24,
-  "QF and EF": 25,
-  SF: 26,
-  PF: 27,
-  GF: 28,
-};
-
 module.exports = {
   sendInBlueResponseDict,
   isFinalDict,
-  isFinalDictInverse,
   squiggleToOddsApiDict,
-  roundsToSquiggleDict,
 };

@@ -3,4 +3,7 @@ const addHoursToDate = (h, date) => {
   return date;
 };
 
-module.exports = { addHoursToDate };
+const flip = data =>
+  Object.fromEntries(Object.entries(data).map(([key, value]) => [value, key]));
+
+module.exports = { addHoursToDate, flip };

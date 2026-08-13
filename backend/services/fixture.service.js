@@ -2,11 +2,8 @@ const axios = require("axios");
 const csv = require("csvtojson");
 const dayjs = require("dayjs");
 
-const {
-  isFinalDict,
-  isFinalDictInverse,
-  squiggleToOddsApiDict,
-} = require("../dict");
+const { isFinalDict, squiggleToOddsApiDict } = require("../dict");
+const { flip } = require("../util");
 
 const db = require("../db");
 const Sequelize = db.Sequelize;
@@ -59,7 +56,7 @@ const insertJsonIntoDb = async json => {
     await Match.bulkCreate(json);
   } else {
     console.log(
-      "ERROR: insertJsonIntoDb() - data.games was null from Squiggle"
+      "ERROR: insertJsonIntoDb() - data.games was null from Squiggle",
     );
   }
 };
@@ -115,10 +112,22 @@ const getRoundsFromDb = async year => {
 
   let finals = matches.filter(x => x.is_final !== 0); // Filter finals (is_final != 0)
   finals = finals.map(x => isFinalDict[x.is_final]); // Map is_final to human readable
+
   // Combine QF and EF
-  if (finals.includes("QF") && finals.includes("EF")) {
-    finals = finals.filter(x => x !== "QF" && x !== "EF");
-    finals = ["QF and EF", ...finals];
+  const qfIndex = finals.indexOf("QF");
+  const efIndex = finals.indexOf("EF");
+
+  // Check if both exist in the array
+  if (qfIndex !== -1 && efIndex !== -1) {
+    // Find which one appears first and which appears second
+    const firstIndex = Math.min(qfIndex, efIndex);
+    const secondIndex = Math.max(qfIndex, efIndex);
+
+    // Remove the one that comes later FIRST so the remaining indices don't shift
+    finals.splice(secondIndex, 1);
+
+    // Replace the earlier one with the combined string
+    finals[firstIndex] = "QF and EF";
   }
 
   let currentRound = null;
@@ -131,7 +140,7 @@ const getRoundsFromDb = async year => {
 
     let nextMatch = matches.find(
       // Add 6 hours to gametime so that it is not instantly the next round
-      x => dayjs.unix(x.unixtime).add(6, "hour").isAfter(dayjs())
+      x => dayjs.unix(x.unixtime).add(6, "hour").isAfter(dayjs()),
     );
 
     // If there is no next match use the last match
@@ -165,7 +174,7 @@ const getMatchesFromDb = async (year, round) => {
 
   if (!isNaN(round)) {
     matches = await Match.findAll({
-      where: { year: year, round: round, is_final: isFinalDictInverse["HA"] },
+      where: { year: year, round: round, is_final: flip(isFinalDict)["HA"] },
       order: [["unixtime", "ASC"]],
     });
   } else if (
@@ -176,14 +185,14 @@ const getMatchesFromDb = async (year, round) => {
       where: {
         year: year,
         is_final: {
-          [Op.or]: [isFinalDictInverse["QF"], isFinalDictInverse["EF"]],
+          [Op.or]: [flip(isFinalDict)["QF"], flip(isFinalDict)["EF"]],
         },
       },
       order: [["id", "ASC"]],
     });
   } else {
     matches = await Match.findAll({
-      where: { year: year, is_final: isFinalDictInverse[round] },
+      where: { year: year, is_final: flip(isFinalDict)[round] },
       order: [["id", "ASC"]],
     });
   }
@@ -200,7 +209,7 @@ const getMatchesFromDb = async (year, round) => {
       venue,
       hscore,
       ascore,
-    })
+    }),
   );
 
   matches.map(x => (x.selected = null));
